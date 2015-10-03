@@ -19,7 +19,6 @@ public class SaveyBot extends PircBot {
     }
     
     public void onMessage(String channel, String sender, String login, String hostname, String message) {
-        
         // URL Handling
         if (message.contains("http")) {
             //  ((http|https):\/\/\S+\.\S+) 
@@ -35,13 +34,22 @@ public class SaveyBot extends PircBot {
                     BufferedReader in = new BufferedReader(new InputStreamReader(site.openStream()));
                     String inputLine;
                     StringBuilder websiteContents = new StringBuilder();
-                    while ((inputLine = in.readLine()) != null)
+                    while ((inputLine = in.readLine()) != null) {
                         websiteContents.append(inputLine + "\n");
+                        // if websiteContents > 1Mb
+                        // (a char is 16bits)
+                        if (websiteContents.length() > 500000) {
+                            System.out.println("URL Fetch exceeded 1Mb!");
+                            break;
+                        }
+                    }
                     in.close();
                     String html = websiteContents.toString();
-                    String websiteTitle = betweenTags("<title>", "</title>", html);
-                    sendMessage(channel, Colors.BOLD + "Title: " + Colors.NORMAL + websiteTitle);
-                    if (message.contains("youtube.com")) {
+                    try {
+                        // If no <title> is found, it will throw an exception!
+                        String websiteTitle = betweenTags("<title>", "</title>", html);
+                        sendMessage(channel, Colors.BOLD + "Title: " + Colors.NORMAL + websiteTitle);
+                        if (message.toLowerCase().contains("youtube.com")) {
                         // YOUTUBE VIDEO
                         try {
                             String viewCount = betweenTags("<div class=\"watch-view-count\">", "</div>", html);
@@ -56,6 +64,10 @@ public class SaveyBot extends PircBot {
                         } catch (Exception e) {
                             System.out.println("YouTube Scrape Failed!");
                         }
+                    }
+                    } catch (Exception e) {
+                        // No <title> was found...
+                        
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

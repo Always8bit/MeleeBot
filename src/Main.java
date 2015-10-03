@@ -19,7 +19,7 @@ public class Main {
             saveybot.connect(args[0]);
             saveybot.joinChannel(args[1]);
         } catch (Exception e) {
-            displayHelp("Provide arguments were invalid.\nDid you add a '#' to the channel argument?");
+            displayHelp("Provided arguments were invalid.\nDid you add a '#' to the channel argument?");
             System.exit(-2);
         }
     }
