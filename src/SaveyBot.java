@@ -9,7 +9,7 @@ import org.jibble.pircbot.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.ArrayList;
+import java.util.*;
 import java.net.*;
 import java.io.*;
 import java.lang.StringBuilder;
@@ -111,22 +111,22 @@ public class SaveyBot extends PircBot {
                     }
                     in.close();
                     String matchups = xml.toString();
-                    ArrayList<ArrayList<String>> battles = matchupParser(participants, matchups);
-                    ArrayList<String> completed = battles.get(0);
-                    ArrayList<String> upcoming  = battles.get(1);
+                    ArrayList<ArrayList<ChallongeMatch>> battles = matchupParser(participants, matchups);
+                    ArrayList<ChallongeMatch> completed = battles.get(0);
+                    ArrayList<ChallongeMatch> upcoming  = battles.get(1);
                     // grab the max number from the config...
                     int numToDisplay = Integer.parseInt(getParam("challongeMaxReturn"));
                     String completedMessage = "Completed Matches:";
                     for (int i = completed.size()-numToDisplay-1; i < completed.size()-1; i++) {
                         if (i < 0) 
                             i = 0;
-                        completedMessage = completedMessage +  " " + completed.get(i);
+                        completedMessage = completedMessage +  " " + completed.get(i).matchText;
                     }
                     String upcomingMessage = "Upcoming Matches:";
                     for (int i = upcoming.size()-numToDisplay-1; i < upcoming.size()-1; i++) {
                         if (i < 0) 
                             i = 0;
-                        upcomingMessage = upcomingMessage +  " " + upcoming.get(i);
+                        upcomingMessage = upcomingMessage +  " " + upcoming.get(i).matchText;
                     }
                     sendMessage(channel, completedMessage);
                     sendMessage(channel, upcomingMessage);
@@ -232,7 +232,7 @@ public class SaveyBot extends PircBot {
     }
     
     // Completed is 0, upcoming is 1
-    private ArrayList<ArrayList<String>> matchupParser(String participants, String matchups) {
+    private ArrayList<ArrayList<ChallongeMatch>> matchupParser(String participants, String matchups) {
         ArrayList<ChallongeUser> users = new ArrayList<>();
         int searchIndexStart = 0;
         String idPrefix  = "<id type=\"integer\">";
@@ -280,8 +280,8 @@ public class SaveyBot extends PircBot {
         String matchPrefix  = "<match>";
         String matchPostfix = "</match>";
         
-        ArrayList<String> completed = new ArrayList<>();
-        ArrayList<String> upcoming  = new ArrayList<>();
+        ArrayList<ChallongeMatch> completed = new ArrayList<>();
+        ArrayList<ChallongeMatch> upcoming  = new ArrayList<>();
         
         int nextMatch = matchups.indexOf(matchPrefix);
         while(nextMatch != -1) {
@@ -290,6 +290,7 @@ public class SaveyBot extends PircBot {
             String p2 = parseTagInMatch(nextMatch, player2Prefix, player2Postfix, matchups);
             String state = parseTagInMatch(nextMatch, statePrefix, statePostfix, matchups);
             String round = parseTagInMatch(nextMatch, roundPrefix, roundPostfix, matchups);
+            int roundInt = Math.abs(Integer.parseInt(round));
             // round formatting (negative is losers)
             if (round.startsWith("-")) {
                 round = "L" + round.substring(1);
@@ -313,10 +314,11 @@ public class SaveyBot extends PircBot {
                         if (loser.equals(users.get(i).userID))
                             loser = users.get(i).username;
                     }
-                    completed.add(Colors.BOLD + "[" + round + "] " + Colors.NORMAL +
-                                  Colors.GREEN + winner + Colors.NORMAL +
-                                  " defeated " + Colors.RED + loser +
-                                  Colors.NORMAL + " (" + scores + ")");
+                    ChallongeMatch cm = new ChallongeMatch(Colors.BOLD + "[" + round + "] " + Colors.NORMAL +
+                                                            Colors.GREEN + winner + Colors.NORMAL +
+                                                            " defeated " + Colors.RED + loser +
+                                                            Colors.NORMAL + " (" + scores + ")", roundInt);
+                    completed.add(cm);
                 } else {
                     // replace userID with display name
                     for (int i = 0; i<users.size(); i++) {
@@ -325,14 +327,41 @@ public class SaveyBot extends PircBot {
                         if (p2.equals(users.get(i).userID))
                             p2 = users.get(i).username;
                     }
-                    upcoming.add(Colors.BOLD + "[" + round + "] " + Colors.NORMAL + p1 + " vs. " + p2);
+                    ChallongeMatch cm = new ChallongeMatch(Colors.BOLD + "[" + round + "] " + Colors.NORMAL + p1 + " vs. " + p2, roundInt);
+                    upcoming.add(cm);
                 }
             }
             nextMatch = matchups.indexOf(matchPrefix, nextMatch);
         }
-        ArrayList<ArrayList<String>> matches = new ArrayList<ArrayList<String>>();
+        ArrayList<ArrayList<ChallongeMatch>> matches = new ArrayList<ArrayList<ChallongeMatch>>();
+       
+        // Sort based on the round number (which was absolute valued earlier...)
+        
+        Collections.sort(completed,new Comparator<ChallongeMatch>() {
+                @Override
+                public int compare(ChallongeMatch m1, ChallongeMatch m2) {
+                    if (m1.round < m2.round)
+                        return -1;
+                    if (m1.round > m2.round)
+                        return 1;
+                    return 0;
+                }
+            });
+        
+        Collections.sort(upcoming,new Comparator<ChallongeMatch>() {
+                @Override
+                public int compare(ChallongeMatch m1, ChallongeMatch m2) {
+                    if (m1.round < m2.round)
+                        return -1;
+                    if (m1.round > m2.round)
+                        return 1;
+                    return 0;
+                }
+            });
+        
         matches.add(completed);
         matches.add(upcoming);
+        
         return matches;
     }
     
@@ -355,4 +384,14 @@ public class SaveyBot extends PircBot {
         
     }
     
+    private class ChallongeMatch {
+        
+        public String matchText;
+        public int round;
+        
+        public ChallongeMatch(String matchText, int round) {
+            this.round = round;
+            this.matchText = matchText;
+        }
+    }
 }
