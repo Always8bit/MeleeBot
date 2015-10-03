@@ -46,13 +46,12 @@ public class SaveyBot extends PircBot {
                             // YOUTUBE VIDEO
                             String viewCount = betweenTags("<div class=\"watch-view-count\">", "</div>", html);
                             String uploadedBy = betweenTags("<link itemprop=\"url\" href=\"http://www.youtube.com/user/", "\">", html);
-                            String likes    = betweenTags("title=\"I like this\" data-position=\"bottomright\" data-force-position=\"true\" data-orientation=\"vertical\"><span class=\"yt-uix-button-content\">", "</span>", html);
-                            String dislikes = betweenTags("title=\"I dislike this\" data-position=\"bottomright\" data-force-position=\"true\" data-orientation=\"vertical\"><span class=\"yt-uix-button-content\">", "</span>", html);
+                            String likeDislikeRatio = betweenTags("<div class=\"video-extras-sparkbar-likes\" style=\"width: ", "\"></div>", html);
                             sendMessage(channel, Colors.BOLD + "Uploaded by: " + Colors.NORMAL + uploadedBy
                                                + Colors.RED + " | " + Colors.NORMAL
                                                + Colors.BOLD + "Views: " + Colors.NORMAL + viewCount
                                                + Colors.RED + " | " + Colors.NORMAL
-                                               + Colors.BOLD + "Likes/Dislikes: " + Colors.NORMAL + likes + "/" + dislikes);
+                                               + Colors.BOLD + "Likes/Dislikes Ratio: " + Colors.NORMAL + likeDislikeRatio);
                         } catch (Exception e) {
                             System.out.println("YouTube Scrape Failed!");
                         }
@@ -81,12 +80,14 @@ public class SaveyBot extends PircBot {
         
     }
     
-    private String betweenTags(String tagOpen, String tagClose, String html) {
+    private String betweenTags(String tagOpen, String tagClose, String html) throws Exception{
         tagOpen = tagOpen.toLowerCase();
         tagClose = tagClose.toLowerCase();
         String htmlSearch = html.toLowerCase();
         int begin = htmlSearch.indexOf(tagOpen) + tagOpen.length();
         int end = htmlSearch.indexOf(tagClose, begin);
+        if (((begin-tagOpen.length()) == -1) || (end == -1))
+            throw new Exception();
         String text = html.substring(begin, end).replaceAll("\n", " ").replaceAll("\r", " ");
         return text;
     }
