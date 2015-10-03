@@ -44,3 +44,6 @@ Temporary Items
 
 # Java class files
 *.class
+
+# Pircbot Javadocs
+libs/pircbot-1.5.0/javadocs/
