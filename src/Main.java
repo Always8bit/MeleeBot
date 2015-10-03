@@ -14,7 +14,7 @@ public class Main {
             System.exit(-1);
         }
         SaveyBot saveybot = new SaveyBot();
-        saveybot.setVerbose(true);
+        saveybot.setVerbose(false);
         try {
             saveybot.connect(args[0]);
             saveybot.joinChannel(args[1]);

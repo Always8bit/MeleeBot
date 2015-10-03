@@ -4,10 +4,12 @@
  * (not related to the original SaveyBot on espernet)
  */
  
-import java.util.concurrent.TimeUnit;
+
 import org.jibble.pircbot.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.ArrayList;
 import java.net.*;
 import java.io.*;
 import java.lang.StringBuilder;
@@ -19,6 +21,7 @@ public class SaveyBot extends PircBot {
     }
     
     public void onMessage(String channel, String sender, String login, String hostname, String message) {
+
         // URL Handling
         if (message.contains("http")) {
             //  ((http|https):\/\/\S+\.\S+) 
@@ -75,10 +78,65 @@ public class SaveyBot extends PircBot {
                 }
             }
         }
-        
+
+        // Challonge Bracket Parsing
+        if (message.toLowerCase().startsWith(".bracket ")) {
+            String api  = getParam("challongeApi");
+            String user = getParam("challongeUser");
+            String bracket = challongeUrlParse(message.substring(".bracket ".length()));
+            System.out.println("Loading Bracket: " + bracket);
+                try {
+                    // get the participants
+                    String url = "https://" + user
+                                + "@api.challonge.com/v1/tournaments/" + bracket + "/participants.xml?api_key="
+                                + api;
+                    URL site = new URL(url);
+                    BufferedReader in = new BufferedReader(new InputStreamReader(site.openStream()));
+                    String inputLine;
+                    StringBuilder xml = new StringBuilder();
+                    while ((inputLine = in.readLine()) != null) {
+                        xml.append(inputLine + "\n");
+                    }
+                    in.close();
+                    String participants = xml.toString();
+                    // now get the current matchups
+                    url = "https://" + user
+                                + "@api.challonge.com/v1/tournaments/" + bracket + "/matches.xml?api_key="
+                                + api;
+                    site = new URL(url);
+                    in = new BufferedReader(new InputStreamReader(site.openStream()));
+                    xml = new StringBuilder();
+                    while ((inputLine = in.readLine()) != null) {
+                        xml.append(inputLine + "\n");
+                    }
+                    in.close();
+                    String matchups = xml.toString();
+                    ArrayList<ArrayList<String>> battles = matchupParser(participants, matchups);
+                    ArrayList<String> completed = battles.get(0);
+                    ArrayList<String> upcoming  = battles.get(1);
+                    // grab the max number from the config...
+                    int numToDisplay = Integer.parseInt(getParam("challongeMaxReturn"));
+                    String completedMessage = "Completed Matches:";
+                    for (int i = completed.size()-numToDisplay-1; i < completed.size()-1; i++) {
+                        if (i < 0) 
+                            i = 0;
+                        completedMessage = completedMessage +  " " + completed.get(i);
+                    }
+                    String upcomingMessage = "Upcoming Matches:";
+                    for (int i = upcoming.size()-numToDisplay-1; i < upcoming.size()-1; i++) {
+                        if (i < 0) 
+                            i = 0;
+                        upcomingMessage = upcomingMessage +  " " + upcoming.get(i);
+                    }
+                    sendMessage(channel, completedMessage);
+                    sendMessage(channel, upcomingMessage);
+                } catch (Exception e) {
+                    System.out.println("Error parsing bracket!");
+                }
+        }
         
         // admin tools
-        if (sender.equals("Savestate")) {
+        if (sender.equals(getParam("root"))) {
             if (message.equalsIgnoreCase(".disconnect")) {
                 sendMessage(channel, "rip me");
                 try {
@@ -103,6 +161,198 @@ public class SaveyBot extends PircBot {
             throw new Exception();
         String text = html.substring(begin, end).replaceAll("\n", " ").replaceAll("\r", " ");
         return text;
+    }
+    
+    public String getParam(String p) {
+        try {
+            BufferedReader in = new BufferedReader(new FileReader("params.config"));
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                if (inputLine.startsWith(p + ":"))
+                    return inputLine.substring(p.length() + 1);
+            }
+        } catch (Exception e) {
+        }
+        return "";
+    }
+    
+    private String challongeUrlParse(String s) {
+        // Example: .bracket http://challonge.com/scj-melee6
+        // Example: .bracket http://scj.challonge.com/pm3
+        // Example: .bracket specificName
+        // Example: .bracket scj.challonge.com/pm3
+        // Example: .bracket challonge.com/scj-pm3
+        // http://stackoverflow.com/questions/767759/occurrences-of-substring-in-a-string
+        String bracketIdent = "";
+        s = s.trim();
+        if (s.toLowerCase().startsWith("http")) {
+            // remove http:// or https://
+            int protocol = s.indexOf("://") + 3;
+            s = s.substring(protocol);
+        }
+        // depending on how many .'s there are, we'll know
+        // if it's a direct url, or userbased url
+        String findStr = ".";
+        int lastIndex = 0;
+        int count = 0;
+        while(lastIndex != -1){
+            lastIndex = s.indexOf(findStr,lastIndex);
+            if(lastIndex != -1){
+                count++;
+                lastIndex += findStr.length();
+            }
+        }
+        if (count == 1) {
+            // Direct URL
+            String prefix = ".com/";
+            int begin = s.indexOf(prefix) + prefix.length();
+            int end   = s.indexOf("/", begin);
+            if (end == -1) {
+                bracketIdent = s.substring(begin);
+            } else {
+                bracketIdent = s.substring(begin, end);
+            }
+        } else if (count == 2) {
+            // User based URL
+            int userIndex = s.indexOf(".");
+            String user = s.substring(0,userIndex);
+            String prefix = ".com/";
+            int begin = s.indexOf(prefix) + prefix.length();
+            int end   = s.indexOf("/", begin);
+            if (end == -1) {
+                bracketIdent = user + "-" + s.substring(begin);
+            } else {
+                bracketIdent = user + "-" + s.substring(begin, end);
+            }
+        } else if (count == 0) {
+            // Actual Bracket ID
+            bracketIdent = s;
+        }
+        return bracketIdent;
+    }
+    
+    // Completed is 0, upcoming is 1
+    private ArrayList<ArrayList<String>> matchupParser(String participants, String matchups) {
+        ArrayList<ChallongeUser> users = new ArrayList<>();
+        int searchIndexStart = 0;
+        String idPrefix  = "<id type=\"integer\">";
+        String idPostfix = "</id>";
+        String namePrefix  = "<display-name>";
+        String namePostfix = "</display-name>";
+        searchIndexStart = participants.indexOf(idPrefix, searchIndexStart);
+        while (searchIndexStart != -1) {
+            searchIndexStart += idPrefix.length();
+            int idEnd = participants.indexOf(idPostfix, searchIndexStart);
+            String id = participants.substring(searchIndexStart, idEnd);
+
+            searchIndexStart = participants.indexOf(namePrefix, searchIndexStart);
+            searchIndexStart += namePrefix.length();
+            int nameEnd = participants.indexOf(namePostfix, searchIndexStart);
+            String displayName = participants.substring(searchIndexStart, nameEnd);
+            
+            users.add(new ChallongeUser(displayName, id));
+            
+            searchIndexStart = participants.indexOf(idPrefix, searchIndexStart);
+        }
+        // Users list now populated. 
+        // It will be referenced as we go through the matchups since.
+        // the matchup XML is based on IDs and not names.
+        
+        String player1Prefix  = "<player1-id type=\"integer\">";
+        String player2Prefix  = "<player2-id type=\"integer\">";
+        String player1Postfix = "</player1-id>";
+        String player2Postfix = "</player2-id>";
+        String roundPrefix    = "<round type=\"integer\">";
+        String roundPostfix   = "</round>";
+        // State: pending, open, complete...
+        // default to pending unless complete!
+        String statePrefix    = "<state>";
+        String statePostfix   = "</state>";
+        // only if match is complete...
+        String winnerPrefix   = "<winner-id type=\"integer\">";
+        String winnerPostfix  = "</winner-id>";
+        String loserPrefix    = "<loser-id type=\"integer\">";
+        String loserPostfix   = "</loser-id>";
+        String scoresPrefix   = "<scores-csv>";
+        String scoresPostfix  = "</scores-csv>";
+        
+        // each is contained in this tag...
+        String matchPrefix  = "<match>";
+        String matchPostfix = "</match>";
+        
+        ArrayList<String> completed = new ArrayList<>();
+        ArrayList<String> upcoming  = new ArrayList<>();
+        
+        int nextMatch = matchups.indexOf(matchPrefix);
+        while(nextMatch != -1) {
+            nextMatch += matchPrefix.length();
+            String p1 = parseTagInMatch(nextMatch, player1Prefix, player1Postfix, matchups);
+            String p2 = parseTagInMatch(nextMatch, player2Prefix, player2Postfix, matchups);
+            String state = parseTagInMatch(nextMatch, statePrefix, statePostfix, matchups);
+            String round = parseTagInMatch(nextMatch, roundPrefix, roundPostfix, matchups);
+            // round formatting (negative is losers)
+            if (round.startsWith("-")) {
+                round = "L" + round.substring(1);
+            } else {
+                round = "W" + round;
+            }
+            boolean filledBracket = true;
+            if (p1.isEmpty() || p2.isEmpty())
+                filledBracket = false;
+            // if we don't have a filled bracket, just skip!
+            if (filledBracket) {
+                // if our match has been completed...
+                if (state.equals("complete")) {
+                    String winner = parseTagInMatch(nextMatch, winnerPrefix, winnerPostfix, matchups);
+                    String loser  = parseTagInMatch(nextMatch, loserPrefix, loserPostfix, matchups);
+                    String scores = parseTagInMatch(nextMatch, scoresPrefix, scoresPostfix, matchups);
+                    // replace userID with display name
+                    for (int i = 0; i<users.size(); i++) {
+                        if (winner.equals(users.get(i).userID))
+                            winner = users.get(i).username;
+                        if (loser.equals(users.get(i).userID))
+                            loser = users.get(i).username;
+                    }
+                    completed.add(Colors.BOLD + "[" + round + "] " + Colors.NORMAL +
+                                  Colors.GREEN + winner + Colors.NORMAL +
+                                  " defeated " + Colors.RED + loser +
+                                  Colors.NORMAL + " (" + scores + ")");
+                } else {
+                    // replace userID with display name
+                    for (int i = 0; i<users.size(); i++) {
+                        if (p1.equals(users.get(i).userID))
+                            p1 = users.get(i).username;
+                        if (p2.equals(users.get(i).userID))
+                            p2 = users.get(i).username;
+                    }
+                    upcoming.add(Colors.BOLD + "[" + round + "] " + Colors.NORMAL + p1 + " vs. " + p2);
+                }
+            }
+            nextMatch = matchups.indexOf(matchPrefix, nextMatch);
+        }
+        ArrayList<ArrayList<String>> matches = new ArrayList<ArrayList<String>>();
+        matches.add(completed);
+        matches.add(upcoming);
+        return matches;
+    }
+    
+    private String parseTagInMatch(int startIndex, String prefix, String postfix, String xml) {
+        int begin = xml.indexOf(prefix, startIndex) + prefix.length();
+        int end   = xml.indexOf(postfix, startIndex);
+        if ((begin != -1) && (end != -1))
+            return xml.substring(begin, end);
+        return "";
+    }
+    
+    private class ChallongeUser {
+        
+        public String username, userID;
+        
+        public ChallongeUser(String username, String userID) {
+            this.username = username;
+            this.userID = userID;
+        }
+        
     }
     
 }
