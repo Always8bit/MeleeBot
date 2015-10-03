@@ -9,15 +9,11 @@
 public class Main {
     
     public static void main(String[] args) throws Exception {
-        if (args.length != 2) {
-            displayHelp("SaveyBot is a generic ircbot created by Savestate.");
-            System.exit(-1);
-        }
         SaveyBot saveybot = new SaveyBot();
         saveybot.setVerbose(false);
         try {
-            saveybot.connect(args[0]);
-            saveybot.joinChannel(args[1]);
+            saveybot.connect(saveybot.getParam("server"));
+            saveybot.joinChannel(saveybot.getParam("channel"));
         } catch (Exception e) {
             displayHelp("Provided arguments were invalid.\nDid you add a '#' to the channel argument?");
             System.exit(-2);

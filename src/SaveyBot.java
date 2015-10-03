@@ -139,6 +139,15 @@ public class SaveyBot extends PircBot {
                 }
         }
         
+        // Google Searching 
+        if (message.toLowerCase().startsWith(".g ")) {
+            String url = message.substring(".g ".length());
+            url = url.trim();
+            url = "https://www.google.com/#q=" + url;
+            url = url.replaceAll(" ", "%20");
+            sendMessage(channel, "Google Search: " + url);
+        }
+        
         // admin tools
         if (sender.equals(getParam("root"))) {
             if (message.equalsIgnoreCase(".disconnect")) {
