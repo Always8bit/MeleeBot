@@ -38,8 +38,22 @@ public class SaveyBot extends PircBot {
                     while ((inputLine = in.readLine()) != null)
                         websiteContents.append(inputLine + "\n");
                     in.close();
-                    String websiteTitle = textBetweenTags("<title>", "</title>", websiteContents.toString());
+                    String html = websiteContents.toString();
+                    String websiteTitle = betweenTags("<title>", "</title>", html);
                     sendMessage(channel, Colors.BOLD + "Title: " + Colors.NORMAL + websiteTitle);
+                    if (html.contains("<div class=\"watch-view-count\">")) {
+                        // YOUTUBE VIDEO
+                        String viewCount = betweenTags("<div class=\"watch-view-count\">", "</div>", html);
+                        String uploadedBy = betweenTags("<link itemprop=\"url\" href=\"http://www.youtube.com/user/", "\">", html);
+                        String likes    = betweenTags("title=\"I like this\" data-position=\"bottomright\" data-force-position=\"true\" data-orientation=\"vertical\"><span class=\"yt-uix-button-content\">", "</span>", html);
+                        String dislikes = betweenTags("title=\"I dislike this\" data-position=\"bottomright\" data-force-position=\"true\" data-orientation=\"vertical\"><span class=\"yt-uix-button-content\">", "</span>", html);
+                        sendMessage(channel, Colors.BOLD + "Uploaded by: " + Colors.NORMAL + uploadedBy
+                                           + Colors.RED + " | " + Colors.NORMAL
+                                           + Colors.BOLD + "Views: " + Colors.NORMAL + viewCount
+                                           + Colors.RED + " | " + Colors.NORMAL
+                                           + Colors.BOLD + "Likes/Dislikes: " + Colors.NORMAL + likes + "/" + dislikes);
+                                           
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("URL Get Failed: " + url);
@@ -69,7 +83,7 @@ public class SaveyBot extends PircBot {
         tagClose = tagClose.toLowerCase();
         String htmlSearch = html.toLowerCase();
         int begin = htmlSearch.indexOf(tagOpen) + tagOpen.length();
-        int end = htmlSearch.indexOf(tagClose);
+        int end = htmlSearch.indexOf(tagClose, begin);
         String text = html.substring(begin, end).replaceAll("\n", " ").replaceAll("\r", " ");
         return text;
     }
