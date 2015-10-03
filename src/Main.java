@@ -13,7 +13,8 @@ public class Main {
         saveybot.setVerbose(false);
         try {
             saveybot.connect(saveybot.getParam("server"));
-            saveybot.joinChannel(saveybot.getParam("channel"));
+            for(int i = 1;!saveybot.getParam("channel"+i).isEmpty();i++)
+                saveybot.joinChannel(saveybot.getParam("channel"+i));
         } catch (Exception e) {
             displayHelp("Provided arguments were invalid.\nDid you add a '#' to the channel argument?");
             System.exit(-2);

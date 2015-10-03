@@ -3,6 +3,8 @@ challongeUser:xxxxxxx
 challongeMaxReturn:5
 root:IRCUserName(WillBeAdmin)
 server:irc.someServer.net
-channel:#channelToJoin
+channel1:#channel1
+channel2:#CHAN2
+channel3:#fsjahe3
 googlePrefix:https://www.google.com/#q=
 youtubePrefix:https://www.youtube.com/results?search_query=
