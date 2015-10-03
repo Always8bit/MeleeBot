@@ -24,6 +24,7 @@ public class SaveyBot extends PircBot {
 
         // URL Handling
         if (message.contains("http")) {
+            System.out.println("URL Parse");
             //  ((http|https):\/\/\S+\.\S+) 
             // ^ URL Regex for this box
             String regex = "((http|https):\\/\\/\\S+\\.\\S+)";
@@ -81,6 +82,7 @@ public class SaveyBot extends PircBot {
 
         // Challonge Bracket Parsing
         if (message.toLowerCase().startsWith(".bracket ")) {
+            System.out.println("Challonge Bracket");
             String api  = getParam("challongeApi");
             String user = getParam("challongeUser");
             String bracket = challongeUrlParse(message.substring(".bracket ".length()));
@@ -141,11 +143,23 @@ public class SaveyBot extends PircBot {
         
         // Google Searching 
         if (message.toLowerCase().startsWith(".g ")) {
+            System.out.println("Google Search");
             String url = message.substring(".g ".length());
             url = url.trim();
-            url = "https://www.google.com/#q=" + url;
+            url = getParam("googlePrefix") + url;
             url = url.replaceAll(" ", "%20");
             sendMessage(channel, "Google Search: " + url);
+        }
+        
+        // YouTube Searching 
+        if (message.toLowerCase().startsWith(".y ")) {
+            System.out.println("YouTube Search");
+            String url = message.substring(".y ".length());
+            url = url.trim();
+            url = getParam("youtubePrefix") + url;
+            url = url.replaceAll("\\+", "%2B");
+            url = url.replaceAll(" ", "+");
+            sendMessage(channel, "YouTube Search: " + url);
         }
         
         // admin tools

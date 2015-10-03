@@ -1,0 +1,8 @@
+challongeApi:xxxxxxxxxxxxxxxxxxxxx
+challongeUser:xxxxxxx
+challongeMaxReturn:5
+root:IRCUserName(WillBeAdmin)
+server:irc.someServer.net
+channel:#channelToJoin
+googlePrefix:https://www.google.com/#q=
+youtubePrefix:https://www.youtube.com/results?search_query=
