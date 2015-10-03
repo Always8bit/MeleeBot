@@ -42,11 +42,12 @@ public class SaveyBot extends PircBot {
                     String websiteTitle = betweenTags("<title>", "</title>", html);
                     sendMessage(channel, Colors.BOLD + "Title: " + Colors.NORMAL + websiteTitle);
                     if (message.contains("youtube.com")) {
+                        // YOUTUBE VIDEO
                         try {
-                            // YOUTUBE VIDEO
                             String viewCount = betweenTags("<div class=\"watch-view-count\">", "</div>", html);
                             String uploadedBy = betweenTags("<link itemprop=\"url\" href=\"http://www.youtube.com/user/", "\">", html);
-                            String likeDislikeRatio = betweenTags("<div class=\"video-extras-sparkbar-likes\" style=\"width: ", "\"></div>", html);
+                            String likeDislikeRatio = betweenTags("<div class=\"video-extras-sparkbar-likes\" style=\"width: ", "%\"></div>", html);
+                            likeDislikeRatio = likeDislikeRatio.substring(0, Math.min(likeDislikeRatio.length(), 6)) + "%";
                             sendMessage(channel, Colors.BOLD + "Uploaded by: " + Colors.NORMAL + uploadedBy
                                                + Colors.RED + " | " + Colors.NORMAL
                                                + Colors.BOLD + "Views: " + Colors.NORMAL + viewCount
