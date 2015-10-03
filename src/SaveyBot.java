@@ -22,6 +22,12 @@ public class SaveyBot extends PircBot {
     
     public void onMessage(String channel, String sender, String login, String hostname, String message) {
 
+        // Help 
+        if (message.toLowerCase().trim().startsWith(".help")) {
+            sendMessage(channel, Colors.RED + Colors.BOLD + "Commands: " + Colors.NORMAL
+                               + ".g [Search Terms], .y [Search Terms], .bracket [Challonge URL or TourneyID]");
+        }
+        
         // URL Handling
         if (message.contains("http")) {
             System.out.println("URL Parse");
@@ -134,8 +140,8 @@ public class SaveyBot extends PircBot {
                             break;
                         upcomingMessage = upcomingMessage +  " " + upcoming.get(i).matchText;
                     }
-                    sendMessage(channel, completedMessage);
-                    sendMessage(channel, upcomingMessage);
+                    sendMessage(sender, completedMessage);
+                    sendMessage(sender, upcomingMessage);
                 } catch (Exception e) {
                     System.out.println("Error parsing bracket!");
                 }
