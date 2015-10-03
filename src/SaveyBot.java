@@ -41,7 +41,8 @@ public class SaveyBot extends PircBot {
                     String html = websiteContents.toString();
                     String websiteTitle = betweenTags("<title>", "</title>", html);
                     sendMessage(channel, Colors.BOLD + "Title: " + Colors.NORMAL + websiteTitle);
-                    if (html.contains("<div class=\"watch-view-count\">")) {
+                    if (message.contains("youtube.com")) {
+                        try {
                         // YOUTUBE VIDEO
                         String viewCount = betweenTags("<div class=\"watch-view-count\">", "</div>", html);
                         String uploadedBy = betweenTags("<link itemprop=\"url\" href=\"http://www.youtube.com/user/", "\">", html);
@@ -52,7 +53,9 @@ public class SaveyBot extends PircBot {
                                            + Colors.BOLD + "Views: " + Colors.NORMAL + viewCount
                                            + Colors.RED + " | " + Colors.NORMAL
                                            + Colors.BOLD + "Likes/Dislikes: " + Colors.NORMAL + likes + "/" + dislikes);
-                                           
+                        } catch (Exception e) {
+                            System.out.println("YouTube Scrape Failed!");
+                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
