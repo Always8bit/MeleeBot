@@ -145,8 +145,8 @@ public class SaveyBot extends PircBot {
                             break;
                         upcomingMessage = upcomingMessage +  " " + upcoming.get(i).matchText;
                     }
-                    sendMessage(sender, completedMessage);
-                    sendMessage(sender, upcomingMessage);
+                    sendMessage(channel, completedMessage);
+                    sendMessage(channel, upcomingMessage);
                 } catch (Exception e) {
                     System.out.println("Error parsing bracket!");
                 }
