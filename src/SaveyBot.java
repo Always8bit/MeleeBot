@@ -25,7 +25,12 @@ public class SaveyBot extends PircBot {
         // Help 
         if (message.toLowerCase().trim().startsWith(".help")) {
             sendMessage(channel, Colors.RED + Colors.BOLD + "Commands: " + Colors.NORMAL
-                               + ".g [Search Terms], .y [Search Terms], .bracket [Challonge URL or TourneyID]");
+                               + ".g [Search Terms], .y [Search Terms], .bracket [Challonge URL or TourneyID], .github");
+        }
+        
+        // GitHub
+        if (message.toLowerCase().trim().startsWith(".github")) {
+            sendMessage(channel, "SaveyBot Source: https://github.com/Always8bit/Saveybot-2.0");
         }
         
         // URL Handling
