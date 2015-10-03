@@ -120,12 +120,16 @@ public class SaveyBot extends PircBot {
                     for (int i = completed.size()-numToDisplay-1; i < completed.size()-1; i++) {
                         if (i < 0) 
                             i = 0;
+                        if (completed.size() == 0)
+                            break;
                         completedMessage = completedMessage +  " " + completed.get(i).matchText;
                     }
                     String upcomingMessage = "Upcoming Matches:";
                     for (int i = upcoming.size()-numToDisplay-1; i < upcoming.size()-1; i++) {
                         if (i < 0) 
                             i = 0;
+                        if (upcoming.size() == 0)
+                            break;
                         upcomingMessage = upcomingMessage +  " " + upcoming.get(i).matchText;
                     }
                     sendMessage(channel, completedMessage);
@@ -290,13 +294,14 @@ public class SaveyBot extends PircBot {
             String p2 = parseTagInMatch(nextMatch, player2Prefix, player2Postfix, matchups);
             String state = parseTagInMatch(nextMatch, statePrefix, statePostfix, matchups);
             String round = parseTagInMatch(nextMatch, roundPrefix, roundPostfix, matchups);
-            int roundInt = Math.abs(Integer.parseInt(round));
+            int roundInt = Integer.parseInt(round);
             // round formatting (negative is losers)
-            if (round.startsWith("-")) {
-                round = "L" + round.substring(1);
+            if (roundInt < 0) {
+                round = "L" + roundInt*-1;
             } else {
-                round = "W" + round;
+                round = "W" + roundInt;
             }
+            roundInt = Math.abs(roundInt);
             boolean filledBracket = true;
             if (p1.isEmpty() || p2.isEmpty())
                 filledBracket = false;
