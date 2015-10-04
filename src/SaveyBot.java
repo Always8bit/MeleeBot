@@ -129,8 +129,9 @@ public class SaveyBot extends PircBot {
                     ArrayList<ChallongeMatch> upcoming  = battles.get(1);
                     // grab the max number from the config...
                     int numToDisplay = Integer.parseInt(getParam("challongeMaxReturn"));
+                    numToDisplay = numToDisplay - 1;
                     String completedMessage = "Completed Matches:";
-                    for (int i = completed.size()-numToDisplay-1; i < completed.size()-1; i++) {
+                    for (int i = completed.size()-numToDisplay-1; i <= completed.size()-1; i++) {
                         if (i < 0) 
                             i = 0;
                         if (completed.size() == 0)
@@ -138,7 +139,7 @@ public class SaveyBot extends PircBot {
                         completedMessage = completedMessage +  " " + completed.get(i).matchText;
                     }
                     String upcomingMessage = "Upcoming Matches:";
-                    for (int i = upcoming.size()-numToDisplay-1; i < upcoming.size()-1; i++) {
+                    for (int i = upcoming.size()-numToDisplay-1; i <= upcoming.size()-1; i++) {
                         if (i < 0) 
                             i = 0;
                         if (upcoming.size() == 0)
