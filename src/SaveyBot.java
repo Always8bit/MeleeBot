@@ -129,19 +129,18 @@ public class SaveyBot extends PircBot {
                     ArrayList<ChallongeMatch> upcoming  = battles.get(1);
                     // grab the max number from the config...
                     int numToDisplay = Integer.parseInt(getParam("challongeMaxReturn"));
-                    numToDisplay = numToDisplay - 1;
                     String completedMessage = "Completed Matches:";
-                    for (int i = completed.size()-numToDisplay-1; i <= completed.size()-1; i++) {
+                    for (int i = completed.size()-1; i >= completed.size()-numToDisplay; i--) {
                         if (i < 0) 
-                            i = 0;
+                            break;
                         if (completed.size() == 0)
                             break;
                         completedMessage = completedMessage +  " " + completed.get(i).matchText;
                     }
                     String upcomingMessage = "Upcoming Matches:";
-                    for (int i = upcoming.size()-numToDisplay-1; i <= upcoming.size()-1; i++) {
+                    for (int i = upcoming.size()-1; i >= upcoming.size()-numToDisplay; i--) {
                         if (i < 0) 
-                            i = 0;
+                            break;
                         if (upcoming.size() == 0)
                             break;
                         upcomingMessage = upcomingMessage +  " " + upcoming.get(i).matchText;
@@ -355,7 +354,7 @@ public class SaveyBot extends PircBot {
                             loser = users.get(i).username;
                     }
                     ChallongeMatch cm = new ChallongeMatch(Colors.BOLD + "[" + round + "] " + Colors.NORMAL +
-                                                            Colors.GREEN + winner + Colors.NORMAL +
+                                                            Colors.BLUE + winner + Colors.NORMAL +
                                                             " defeated " + Colors.RED + loser +
                                                             Colors.NORMAL + " (" + scores + ")", roundInt);
                     completed.add(cm);
