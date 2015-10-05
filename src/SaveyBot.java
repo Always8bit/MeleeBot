@@ -173,6 +173,12 @@ public class SaveyBot extends PircBot {
             sendMessage(channel, "YouTube Search: " + url);
         }
         
+        String simpleResponse = getParam("SIMPLERESPONSE-" + message.toLowerCase().replaceAll("\\.",""));
+        // Simple Response
+        if (!simpleResponse.isEmpty()) {
+            sendMessage(channel, simpleResponse);
+        }
+        
         // admin tools
         if (sender.equals(getParam("root"))) {
             if (message.equalsIgnoreCase(".disconnect")) {
