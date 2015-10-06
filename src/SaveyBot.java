@@ -71,6 +71,7 @@ public class SaveyBot extends PircBot {
                     try {
                         // If no <title> is found, it will throw an exception!
                         String websiteTitle = betweenTags("<title>", "</title>", html);
+                        websiteTitle = websiteTitle.trim();
                         sendMessage(channel, Colors.BOLD + "Title: " + Colors.NORMAL + websiteTitle);
                         if (message.toLowerCase().contains("youtube.com")) {
                         // YOUTUBE VIDEO
@@ -252,16 +253,77 @@ public class SaveyBot extends PircBot {
         
         // admin tools
         if (sender.equals(getParam("root"))) {
+            
             if (mCommand.equalsIgnoreCase("disconnect")) {
                 sendMessage(channel, "rip me");
                 try {
                     TimeUnit.SECONDS.sleep(1);
-                } catch (InterruptedException e) {
+                } catch (Exception e) {
                     //Handle exception
                 }
                 disconnect();
                 System.exit(0);
             }
+            
+            if (mCommand.equalsIgnoreCase("leave")) {
+                try {
+                    sendMessage(channel, "later losers");
+                    TimeUnit.SECONDS.sleep(1);
+                    partChannel(channel);
+                } catch (Exception e) {
+                    //Handle exception
+                }
+            }
+            
+            if (mCommand.equalsIgnoreCase("join")) {
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                    joinChannel(mArgs);
+                } catch (Exception e) {
+                    sendMessage(channel, "wtf is that even a channel");
+                }
+            }
+            
+            if (mCommand.equalsIgnoreCase("msg")) {
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                    String[] stuff = mArgs.split("\\s+", 2);
+                    sendMessage(stuff[0], stuff[1]);
+                } catch (Exception e) {
+                    sendMessage(channel, "you probably typed that wrong");
+                }
+            }
+            
+            if (mCommand.equalsIgnoreCase("param-set")) {
+                try {
+                    String[] stuff = mArgs.split("\\s+", 2);
+                    setParam(stuff[0], stuff[1]);
+                } catch (Exception e) {
+                    sendMessage(channel, "aka set failed (wow)");
+                }
+            }
+            
+            if (mCommand.equalsIgnoreCase("param-remove")) {
+                try {
+                    delParam(mArgs);
+                } catch (Exception e) {
+                    sendMessage(channel, "aka remove failed");
+                }
+            }
+            
+            if (mCommand.equalsIgnoreCase("param-list")) {
+                try {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream("params.config"), "UTF-8"));
+                    String inputLine;
+                    while ((inputLine = in.readLine()) != null) {
+                        sendMessage(sender, inputLine);
+                    }
+                    in.close();
+                } catch (Exception e) {
+                    sendMessage(channel, "aka remove failed");
+                }
+            }
+            
         }
 
         
@@ -325,12 +387,48 @@ public class SaveyBot extends PircBot {
             BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream("params.config"), "UTF-8"));
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
-                if (inputLine.startsWith(p + ":"))
+                if (inputLine.startsWith(p + ":")) {
+                    in.close();
                     return inputLine.substring(p.length() + 1);
+                }
             }
         } catch (Exception e) {
         }
         return "";
+    }
+
+    public void setParam(String p, String val) throws Exception {
+        BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream("params.config"), "UTF-8"));
+        StringBuilder  sb = new StringBuilder();
+        String inputLine;
+        boolean exists = false;
+        while ((inputLine = in.readLine()) != null) {
+            if (inputLine.startsWith(p + ":")) {
+                inputLine = p + ":" + val;
+                exists = true;
+            }
+            sb.append(inputLine).append("\n");
+        }
+        if (!exists) {
+            sb.append("// the following was added remotely").append("\n");
+            sb.append(p + ":" + val).append("\n");
+        }
+        PrintWriter out = new PrintWriter("params.config");
+        out.println(sb.toString());
+        out.close();
+    }
+    
+    public void delParam(String p) throws Exception {
+        BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream("params.config"), "UTF-8"));
+        StringBuilder  sb = new StringBuilder();
+        String inputLine;
+        while ((inputLine = in.readLine()) != null) {
+            if (!inputLine.startsWith(p + ":"))
+                sb.append(inputLine).append("\n");
+        }
+        PrintWriter out = new PrintWriter("params.config");
+        out.println(sb.toString());
+        out.close();
     }
     
     private String challongeUrlParse(String s) {
