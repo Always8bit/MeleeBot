@@ -203,9 +203,10 @@ public class SaveyBot extends PircBot {
         
         // Twitch Stream Search
         if (mCommand.equals("twitch")) {
-            String results = twitchAPISearch(mArgs);
-            if (!results.isEmpty()) {
-                sendMessage(channel, results);
+            String[] results = twitchAPISearch(mArgs);
+            if (results.length == 2) {
+                sendMessage(channel, results[0]);
+                sendMessage(channel, results[1]);
             } else {
                 sendMessage(channel, "Search \"" + mArgs + "\" provided no stream results");
             }
@@ -641,7 +642,7 @@ public class SaveyBot extends PircBot {
         return "";
     }
     
-    private String twitchAPISearch(String s) {
+    private String[] twitchAPISearch(String s) {
         try {
             s = s.replaceAll("\\s+","+");
             URL site = new URL("https://api.twitch.tv/kraken/search/streams?q=" + s);
@@ -657,7 +658,7 @@ public class SaveyBot extends PircBot {
                 // (a char is 16bits)
                 if (websiteContents.length() > 500000) {
                     System.out.println("URL Fetch exceeded 1Mb!");
-                    return "";
+                    return new String[1];
                 }
             }
             in.close();
@@ -666,7 +667,7 @@ public class SaveyBot extends PircBot {
 
             String viewersPrefix =  "\"viewers\":";
             String viewersPostfix = ",";
-            String gamePrefix = "\"game\":";
+            String gamePrefix = "\"game\":\"";
             String gamePostfix = "\",";
             String statusPrefix = "\"status\":\"";
             String statusPostfix = "\",";
@@ -678,14 +679,18 @@ public class SaveyBot extends PircBot {
             String status  = betweenTags(statusPrefix,  statusPostfix,  html);
             String user    = betweenTags(userPrefix,    userPostfix,    html);
             
-            String ret = Colors.BOLD + "Top Result: " + Colors.NORMAL + user + " playing " + 
+            String[] responses = new String[2];
+            
+            responses[0] = Colors.BOLD + "Top Result: " + Colors.NORMAL + user + " playing " + 
                          game + Colors.RED + " | " + Colors.NORMAL + viewers + " Viewers" + 
                          Colors.RED + " | " + Colors.NORMAL + status;
-            return ret;
+            responses[1] = "http://twitch.tv/" + user;
+            
+            return responses;
         } catch (Exception e) {
             // do stuff
         }
-        return "";
+        return new String[1];
     }
     
     private class ChallongeUser {
