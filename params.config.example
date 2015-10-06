@@ -6,6 +6,7 @@ challongeMaxReturn:5
 // GLOBAL
 server:irc.site.net
 botName:BotName
+ident:password
 channel1:#c1
 channel2:#chann2
 channel3:#wwwewgwrg

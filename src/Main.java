@@ -16,6 +16,7 @@ public class Main {
             saveybot.connect(saveybot.getParam("server"));
             for(int i = 1;!saveybot.getParam("channel"+i).isEmpty();i++)
                 saveybot.joinChannel(saveybot.getParam("channel"+i));
+            saveybot.sendMessage("NickServ", "identify " + saveybot.getParam("botName") + " " + saveybot.getParam("ident"));
         } catch (Exception e) {
             displayHelp("Provided arguments were invalid.\nDid you add a '#' to the channel argument?");
             System.exit(-2);
