@@ -69,26 +69,27 @@ public class SaveyBot extends PircBot {
                     in.close();
                     String html = websiteContents.toString();
                     try {
-                        // If no <title> is found, it will throw an exception!
-                        String websiteTitle = betweenTags("<title>", "</title>", html);
-                        websiteTitle = websiteTitle.trim();
-                        sendMessage(channel, Colors.BOLD + "Title: " + Colors.NORMAL + websiteTitle);
                         if (message.toLowerCase().contains("youtube.com")) {
-                        // YOUTUBE VIDEO
-                        try {
-                            String viewCount = betweenTags("<div class=\"watch-view-count\">", "</div>", html);
-                            String uploadedBy = betweenTags("<link itemprop=\"url\" href=\"http://www.youtube.com/user/", "\">", html);
-                            String likeDislikeRatio = betweenTags("<div class=\"video-extras-sparkbar-likes\" style=\"width: ", "%\"></div>", html);
-                            likeDislikeRatio = likeDislikeRatio.substring(0, Math.min(likeDislikeRatio.length(), 6)) + "%";
-                            sendMessage(channel, Colors.BOLD + "Uploaded by: " + Colors.NORMAL + uploadedBy
-                                               + Colors.RED + " | " + Colors.NORMAL
-                                               + Colors.BOLD + "Views: " + Colors.NORMAL + viewCount
-                                               + Colors.RED + " | " + Colors.NORMAL
-                                               + Colors.BOLD + "Likes/Dislikes Ratio: " + Colors.NORMAL + likeDislikeRatio);
-                        } catch (Exception e) {
-                            System.out.println("YouTube Scrape Failed!");
+                            // If no <title> is found, it will throw an exception!
+                            String websiteTitle = betweenTags("<title>", "</title>", html);
+                            websiteTitle = websiteTitle.trim();
+                            sendMessage(channel, Colors.BOLD + "Title: " + Colors.NORMAL + websiteTitle);
+                            
+                            // YOUTUBE VIDEO
+                            try {
+                                String viewCount = betweenTags("<div class=\"watch-view-count\">", "</div>", html);
+                                String uploadedBy = betweenTags("<link itemprop=\"url\" href=\"http://www.youtube.com/user/", "\">", html);
+                                String likeDislikeRatio = betweenTags("<div class=\"video-extras-sparkbar-likes\" style=\"width: ", "%\"></div>", html);
+                                likeDislikeRatio = likeDislikeRatio.substring(0, Math.min(likeDislikeRatio.length(), 6)) + "%";
+                                sendMessage(channel, Colors.BOLD + "Uploaded by: " + Colors.NORMAL + uploadedBy
+                                                   + Colors.RED + " | " + Colors.NORMAL
+                                                   + Colors.BOLD + "Views: " + Colors.NORMAL + viewCount
+                                                   + Colors.RED + " | " + Colors.NORMAL
+                                                   + Colors.BOLD + "Likes/Dislikes Ratio: " + Colors.NORMAL + likeDislikeRatio);
+                            } catch (Exception e) {
+                                System.out.println("YouTube Scrape Failed!");
+                            }
                         }
-                    }
                     } catch (Exception e) {
                         // No <title> was found...
                         
@@ -197,6 +198,16 @@ public class SaveyBot extends PircBot {
                     } catch (Exception e) {
                         System.out.println("Error parsing bracket!");
                     }
+            }
+        }
+        
+        // Twitch Stream Search
+        if (mCommand.equals("twitch")) {
+            String results = twitchAPISearch(mArgs);
+            if (!results.isEmpty()) {
+                sendMessage(channel, results);
+            } else {
+                sendMessage(channel, "Search \"" + mArgs + "\" provided no stream results");
             }
         }
         
@@ -627,6 +638,53 @@ public class SaveyBot extends PircBot {
         int end   = xml.indexOf(postfix, startIndex);
         if ((begin != -1) && (end != -1))
             return xml.substring(begin, end);
+        return "";
+    }
+    
+    private String twitchAPISearch(String s) {
+        try {
+            s = s.replaceAll("\\s+","+");
+            URL site = new URL("https://api.twitch.tv/kraken/search/streams?q=" + s);
+            URLConnection urlc = site.openConnection();
+            urlc.addRequestProperty("User-Agent", getParam("useragent"));
+            InputStream stream = urlc.getInputStream();
+            BufferedReader in = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+            String inputLine;
+            StringBuilder websiteContents = new StringBuilder();
+            while ((inputLine = in.readLine()) != null) {
+                websiteContents.append(inputLine + "\n");
+                // if websiteContents > 1Mb
+                // (a char is 16bits)
+                if (websiteContents.length() > 500000) {
+                    System.out.println("URL Fetch exceeded 1Mb!");
+                    return "";
+                }
+            }
+            in.close();
+            
+            String html = websiteContents.toString();
+
+            String viewersPrefix =  "\"viewers\":";
+            String viewersPostfix = ",";
+            String gamePrefix = "\"game\":";
+            String gamePostfix = "\",";
+            String statusPrefix = "\"status\":\"";
+            String statusPostfix = "\",";
+            String userPrefix = "\"name\":\"";
+            String userPostfix = "\",";
+
+            String viewers = betweenTags(viewersPrefix, viewersPostfix, html);
+            String game    = betweenTags(gamePrefix,    gamePostfix,    html);
+            String status  = betweenTags(statusPrefix,  statusPostfix,  html);
+            String user    = betweenTags(userPrefix,    userPostfix,    html);
+            
+            String ret = Colors.BOLD + "Top Result: " + Colors.NORMAL + user + " playing " + 
+                         game + Colors.RED + " | " + Colors.NORMAL + viewers + " Viewers" + 
+                         Colors.RED + " | " + Colors.NORMAL + status;
+            return ret;
+        } catch (Exception e) {
+            // do stuff
+        }
         return "";
     }
     
