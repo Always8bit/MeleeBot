@@ -19,11 +19,17 @@ public class SaveyBot extends PircBot {
     
     RussianRoulette rr;
     EightBall eb;
+    ArrayList<FloodTimer> ftArray;
     
     public SaveyBot() {
-        this.setName(getParams("botName"));
+        this.setName(getParam("botName"));
         rr = new RussianRoulette();
         eb = new EightBall();
+        ftArray = new ArrayList<>();
+    }
+    
+    public void onJoin(String channel, String sender, String login, String hostname) {
+        ftArray.add(new FloodTimer(channel, Integer.parseInt(getParam("floodTimerSeconds"))));
     }
     
     public void onMessage(String channel, String sender, String login, String hostname, String message) {
@@ -112,72 +118,79 @@ public class SaveyBot extends PircBot {
         System.out.println("Arguments Extracted: [" + mArgs + "]");
         System.out.println("Invoking Symbol: [" + inv + "]");
         
-        // GitHub
-        if (mCommand.equals("github")) {
-            sendMessage(channel, "SaveyBot Source: https://github.com/Always8bit/Saveybot-2.0");
+        // FLOOD PROTECTED COMMANDS 
+        FloodTimer ft = null;
+        for (int i=0; i<ftArray.size(); i++) {
+            if (ftArray.get(i).getChannel().equals(channel))
+                ft = ftArray.get(i);
         }
         
-        // Challonge Bracket Parsing
-        if (mCommand.equals("bracket")) {
-            System.out.println("Challonge Bracket");
-            String api  = getParam("challongeApi");
-            String user = getParam("challongeUser");
-            String bracket = challongeUrlParse(mArgs);
-            System.out.println("Loading Bracket: " + bracket);
-                try {
-                    // get the participants
-                    String url = "https://" + user
-                                + "@api.challonge.com/v1/tournaments/" + bracket + "/participants.xml?api_key="
-                                + api;
-                    URL site = new URL(url);
-                    BufferedReader in = new BufferedReader(new InputStreamReader(site.openStream()));
-                    String inputLine;
-                    StringBuilder xml = new StringBuilder();
-                    while ((inputLine = in.readLine()) != null) {
-                        xml.append(inputLine + "\n");
+        if (null == ft) {
+            System.out.println("FLOOD TIMER ERROR: CHANNEL NOT INIT!");
+        } else if (ft.invoke()) {
+            // Challonge Bracket Parsing
+            if (mCommand.equals("bracket")) {
+                System.out.println("Challonge Bracket");
+                String api  = getParam("challongeApi");
+                String user = getParam("challongeUser");
+                String bracket = challongeUrlParse(mArgs);
+                System.out.println("Loading Bracket: " + bracket);
+                    try {
+                        // get the participants
+                        String url = "https://" + user
+                                    + "@api.challonge.com/v1/tournaments/" + bracket + "/participants.xml?api_key="
+                                    + api;
+                        URL site = new URL(url);
+                        BufferedReader in = new BufferedReader(new InputStreamReader(site.openStream()));
+                        String inputLine;
+                        StringBuilder xml = new StringBuilder();
+                        while ((inputLine = in.readLine()) != null) {
+                            xml.append(inputLine + "\n");
+                        }
+                        in.close();
+                        String participants = xml.toString();
+                        // now get the current matchups
+                        url = "https://" + user
+                                    + "@api.challonge.com/v1/tournaments/" + bracket + "/matches.xml?api_key="
+                                    + api;
+                        site = new URL(url);
+                        in = new BufferedReader(new InputStreamReader(site.openStream()));
+                        xml = new StringBuilder();
+                        while ((inputLine = in.readLine()) != null) {
+                            xml.append(inputLine + "\n");
+                        }
+                        in.close();
+                        String matchups = xml.toString();
+                        ArrayList<ArrayList<ChallongeMatch>> battles = matchupParser(participants, matchups);
+                        ArrayList<ChallongeMatch> completed = battles.get(0);
+                        ArrayList<ChallongeMatch> upcoming  = battles.get(1);
+                        // grab the max number from the config...
+                        int numToDisplay = Integer.parseInt(getParam("challongeMaxReturn"));
+                        String completedMessage = "";
+                        for (int i = completed.size()-1; i >= completed.size()-numToDisplay; i--) {
+                            if (i < 0) 
+                                break;
+                            if (completed.size() == 0)
+                                break;
+                            completedMessage = completedMessage +  " " + completed.get(i).matchText;
+                        }
+                        String upcomingMessage = "";
+                        for (int i = upcoming.size()-1; i >= upcoming.size()-numToDisplay; i--) {
+                            if (i < 0) 
+                                break;
+                            if (upcoming.size() == 0)
+                                break;
+                            upcomingMessage = upcomingMessage +  " " + upcoming.get(i).matchText;
+                        }
+                        if (!completedMessage.isEmpty())
+                            sendMessage(channel, "Completed Matches:" + completedMessage);
+                        if (!upcomingMessage.isEmpty())
+                            sendMessage(channel, "Upcoming Matches:" + upcomingMessage);
+                        ft.executedSuccessfully();
+                    } catch (Exception e) {
+                        System.out.println("Error parsing bracket!");
                     }
-                    in.close();
-                    String participants = xml.toString();
-                    // now get the current matchups
-                    url = "https://" + user
-                                + "@api.challonge.com/v1/tournaments/" + bracket + "/matches.xml?api_key="
-                                + api;
-                    site = new URL(url);
-                    in = new BufferedReader(new InputStreamReader(site.openStream()));
-                    xml = new StringBuilder();
-                    while ((inputLine = in.readLine()) != null) {
-                        xml.append(inputLine + "\n");
-                    }
-                    in.close();
-                    String matchups = xml.toString();
-                    ArrayList<ArrayList<ChallongeMatch>> battles = matchupParser(participants, matchups);
-                    ArrayList<ChallongeMatch> completed = battles.get(0);
-                    ArrayList<ChallongeMatch> upcoming  = battles.get(1);
-                    // grab the max number from the config...
-                    int numToDisplay = Integer.parseInt(getParam("challongeMaxReturn"));
-                    String completedMessage = "";
-                    for (int i = completed.size()-1; i >= completed.size()-numToDisplay; i--) {
-                        if (i < 0) 
-                            break;
-                        if (completed.size() == 0)
-                            break;
-                        completedMessage = completedMessage +  " " + completed.get(i).matchText;
-                    }
-                    String upcomingMessage = "";
-                    for (int i = upcoming.size()-1; i >= upcoming.size()-numToDisplay; i--) {
-                        if (i < 0) 
-                            break;
-                        if (upcoming.size() == 0)
-                            break;
-                        upcomingMessage = upcomingMessage +  " " + upcoming.get(i).matchText;
-                    }
-                    if (!completedMessage.isEmpty())
-                        sendMessage(channel, "Completed Matches:" + completedMessage);
-                    if (!upcomingMessage.isEmpty())
-                        sendMessage(channel, "Upcoming Matches:" + upcomingMessage);
-                } catch (Exception e) {
-                    System.out.println("Error parsing bracket!");
-                }
+            }
         }
         
         // Google Searching 
@@ -262,7 +275,7 @@ public class SaveyBot extends PircBot {
     
     public String getParam(String p) {
         try {
-            BufferedReader in = new BufferedReader(new FileReader("params.config"));
+            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream("params.config"), "UTF-8"));
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 if (inputLine.startsWith(p + ":"))
@@ -592,4 +605,40 @@ public class SaveyBot extends PircBot {
             return responses.get(n).get(randMessageIndex);
         }
     }
+
+    private class FloodTimer {
+
+        private long pendingTime;
+        private long currentInvocation;
+        private long previousInvocation;
+        private String channel;
+        private int floodSeconds;
+        
+        public FloodTimer(String channel, int floodSeconds) {
+            currentInvocation = 0;
+            previousInvocation = 0;
+            pendingTime = 0;
+            this.floodSeconds = floodSeconds;
+            this.channel = channel;
+        }
+        
+        public boolean invoke() {
+            pendingTime = System.currentTimeMillis()/1000L;
+            if (pendingTime - currentInvocation > floodSeconds || pendingTime - previousInvocation > floodSeconds) {
+                return true;
+            }
+            return false;
+        }
+        
+        public void executedSuccessfully() {
+            previousInvocation = currentInvocation;
+            currentInvocation = pendingTime;
+        }
+        
+        public String getChannel() {
+            return channel;
+        }
+        
+    }
+    
 }

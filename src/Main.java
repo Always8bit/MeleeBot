@@ -11,6 +11,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         SaveyBot saveybot = new SaveyBot();
         saveybot.setVerbose(false);
+        saveybot.setEncoding("UTF-8");
         try {
             saveybot.connect(saveybot.getParam("server"));
             for(int i = 1;!saveybot.getParam("channel"+i).isEmpty();i++)
