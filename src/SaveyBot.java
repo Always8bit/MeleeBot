@@ -204,15 +204,18 @@ public class SaveyBot extends PircBot {
             if (rr.fire()) {
                 sendMessage(channel, Colors.RED + "*" + Colors.NORMAL + Colors.BOLD + "BANG" + Colors.NORMAL + Colors.RED + "*");
                 sendMessage(channel, sender + " just blew his brains out. (not like they were important anyways)");
+                sendMessage(channel, "A new bullet was loaded into the chamber.");
             } else {
                 sendMessage(channel, Colors.RED + "*" + Colors.NORMAL + Colors.BOLD + "CLICK" + Colors.NORMAL + Colors.RED + "*");
             }
         }
         
         // 8-Ball
-        if (mCommand.equals("8") || mCommand.equals("8ball") || mCommand.equals("eight")) {
+        if (mCommand.equals("8") || mCommand.equals("8ball") || mCommand.equals("eight") || mCommand.equals("is") || mCommand.equals("conch")){
             if (mArgs.isEmpty())
                 return;
+            if (mCommand.equals("is"))
+                mArgs = "is " + mArgs;
             sendMessage(channel, sender + ": " + eb.response(mArgs));
         }
         
