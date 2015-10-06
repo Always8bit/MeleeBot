@@ -12,6 +12,7 @@ public class Main {
         SaveyBot saveybot = new SaveyBot();
         saveybot.setVerbose(false);
         saveybot.setEncoding("UTF-8");
+        saveybot.setMessageDelay(500);
         try {
             saveybot.connect(saveybot.getParam("server"));
             for(int i = 1;!saveybot.getParam("channel"+i).isEmpty();i++)

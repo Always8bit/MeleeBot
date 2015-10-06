@@ -307,7 +307,7 @@ public class SaveyBot extends PircBot {
                 try {
                     delParam(mArgs);
                 } catch (Exception e) {
-                    sendMessage(channel, "aka remove failed");
+                    sendMessage(channel, "remove failed");
                 }
             }
             
@@ -320,7 +320,7 @@ public class SaveyBot extends PircBot {
                     }
                     in.close();
                 } catch (Exception e) {
-                    sendMessage(channel, "aka remove failed");
+                    sendMessage(channel, "remove failed");
                 }
             }
             
@@ -410,7 +410,6 @@ public class SaveyBot extends PircBot {
             sb.append(inputLine).append("\n");
         }
         if (!exists) {
-            sb.append("// the following was added remotely").append("\n");
             sb.append(p + ":" + val).append("\n");
         }
         PrintWriter out = new PrintWriter("params.config");
