@@ -630,7 +630,7 @@ public class SaveyBot extends PircBot {
     private String[] twitchAPISearch(String s) {
         try {
             s = s.replaceAll("\\s+","%20");
-            URL site = new URL("https://api.twitch.tv/kraken/search/streams?q=" + s + "&limit=1");
+            URL site = new URL("https://api.twitch.tv/kraken/search/streams?q=" + s);
             URLConnection urlc = site.openConnection();
             urlc.addRequestProperty("User-Agent", getParam("useragent"));
             InputStream stream = urlc.getInputStream();
