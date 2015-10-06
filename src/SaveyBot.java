@@ -74,21 +74,6 @@ public class SaveyBot extends PircBot {
                             String websiteTitle = betweenTags("<title>", "</title>", html);
                             websiteTitle = websiteTitle.trim();
                             sendMessage(channel, Colors.BOLD + "Title: " + Colors.NORMAL + websiteTitle);
-                            
-                            // YOUTUBE VIDEO
-                            try {
-                                String viewCount = betweenTags("<div class=\"watch-view-count\">", "</div>", html);
-                                String uploadedBy = betweenTags("<link itemprop=\"url\" href=\"http://www.youtube.com/user/", "\">", html);
-                                String likeDislikeRatio = betweenTags("<div class=\"video-extras-sparkbar-likes\" style=\"width: ", "%\"></div>", html);
-                                likeDislikeRatio = likeDislikeRatio.substring(0, Math.min(likeDislikeRatio.length(), 6)) + "%";
-                                sendMessage(channel, Colors.BOLD + "Uploaded by: " + Colors.NORMAL + uploadedBy
-                                                   + Colors.RED + " | " + Colors.NORMAL
-                                                   + Colors.BOLD + "Views: " + Colors.NORMAL + viewCount
-                                                   + Colors.RED + " | " + Colors.NORMAL
-                                                   + Colors.BOLD + "Likes/Dislikes Ratio: " + Colors.NORMAL + likeDislikeRatio);
-                            } catch (Exception e) {
-                                System.out.println("YouTube Scrape Failed!");
-                            }
                         }
                     } catch (Exception e) {
                         // No <title> was found...
@@ -644,8 +629,8 @@ public class SaveyBot extends PircBot {
     
     private String[] twitchAPISearch(String s) {
         try {
-            s = s.replaceAll("\\s+","+");
-            URL site = new URL("https://api.twitch.tv/kraken/search/streams?q=" + s);
+            s = s.replaceAll("\\s+","%20");
+            URL site = new URL("https://api.twitch.tv/kraken/search/streams?q=melee" + s + "&limit=1");
             URLConnection urlc = site.openConnection();
             urlc.addRequestProperty("User-Agent", getParam("useragent"));
             InputStream stream = urlc.getInputStream();
@@ -757,7 +742,6 @@ public class SaveyBot extends PircBot {
             responses.add(RESPONSE_YES, yes);
 
             // NO Responses
-            no.add("");
             no.add("I doubt it very much.");
             no.add("No chance.");
             no.add("The outlook is poor.");
