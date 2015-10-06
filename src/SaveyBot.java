@@ -21,7 +21,7 @@ public class SaveyBot extends PircBot {
     EightBall eb;
     
     public SaveyBot() {
-        this.setName("SaveyBot");
+        this.setName(getParams("botName"));
         rr = new RussianRoulette();
         eb = new EightBall();
     }
