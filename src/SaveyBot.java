@@ -182,6 +182,8 @@ public class SaveyBot extends PircBot {
                                 break;
                             upcomingMessage = upcomingMessage +  " " + upcoming.get(i).matchText;
                         }
+                        if (!(mArgs.contains("www") || mArgs.contains("http")))
+                                    sendMessage(channel, "URL: http://challonge.com/" + bracket);
                         if (!upcomingMessage.isEmpty()) {
                             if (ft.invoke()) {
                                 if (!completedMessage.isEmpty())
