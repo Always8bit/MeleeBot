@@ -54,7 +54,7 @@ public class SaveyBot extends PircBot {
                     URLConnection urlc = site.openConnection();
                     urlc.addRequestProperty("User-Agent", getParam("useragent"));
                     InputStream stream = urlc.getInputStream();
-                    BufferedReader in = new BufferedReader(new InputStreamReader(stream));
+                    BufferedReader in = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
                     String inputLine;
                     StringBuilder websiteContents = new StringBuilder();
                     while ((inputLine = in.readLine()) != null) {
