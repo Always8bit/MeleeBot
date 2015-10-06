@@ -123,7 +123,7 @@ public class SaveyBot extends PircBot {
         
         if (null == ft) {
             System.out.println("FLOOD TIMER ERROR: CHANNEL NOT INIT!");
-        } else if (ft.invoke()) {
+        } else {
             // Challonge Bracket Parsing
             if (mCommand.equals("bracket")) {
                 System.out.println("Challonge Bracket");
@@ -179,10 +179,12 @@ public class SaveyBot extends PircBot {
                             upcomingMessage = upcomingMessage +  " " + upcoming.get(i).matchText;
                         }
                         if (!upcomingMessage.isEmpty()) {
-                            if (!completedMessage.isEmpty())
-                                sendMessage(channel, "Completed Matches:" + completedMessage);
-                            sendMessage(channel, "Upcoming Matches:" + upcomingMessage);
-                            ft.executedSuccessfully();
+                            if (ft.invoke()) {
+                                if (!completedMessage.isEmpty())
+                                    sendMessage(channel, "Completed Matches:" + completedMessage);
+                                sendMessage(channel, "Upcoming Matches:" + upcomingMessage);
+                                ft.executedSuccessfully();
+                            }
                         } else {
                             sendMessage(channel, Colors.BOLD + bracket + "'s Results" + Colors.NORMAL + ": " + challongeStandingsParse(bracket));
                         }
