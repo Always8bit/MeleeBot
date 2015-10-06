@@ -51,7 +51,10 @@ public class SaveyBot extends PircBot {
                 try {
                     url = matcher.group(1);
                     URL site = new URL(url);
-                    BufferedReader in = new BufferedReader(new InputStreamReader(site.openStream()));
+                    URLConnection urlc = url.openConnection();
+                    urlc.addRequestProperty(getParam("useragent"));
+                    InputStream stream = urlc.getInputStream();
+                    BufferedReader in = new BufferedReader(new InputStreamReader(stream));
                     String inputLine;
                     StringBuilder websiteContents = new StringBuilder();
                     while ((inputLine = in.readLine()) != null) {
@@ -272,7 +275,10 @@ public class SaveyBot extends PircBot {
         String rankSectionStart = "<td class='left display_name'>";
         
         URL site = new URL(url);
-        BufferedReader in = new BufferedReader(new InputStreamReader(site.openStream()));
+        URLConnection urlc = url.openConnection();
+        urlc.addRequestProperty(getParam("useragent"));
+        InputStream stream = urlc.getInputStream();
+        BufferedReader in = new BufferedReader(new InputStreamReader(stream));
         String inputLine;
         StringBuilder html = new StringBuilder();
         while ((inputLine = in.readLine()) != null) {
