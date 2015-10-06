@@ -1,17 +1,26 @@
-// ###* will be replaced with what comes after a command
-// ###1 will take the 1st word after a command
-// ###2 will take the second, etc
-invokingSymbol:!
+// CHALLONGE
 challongeApi:xxxxxxxxxxxxxxxxxxxxx
-challongeUser:xxxxxxx
+challongeUser:xxxxxxxxxxxxx
 challongeMaxReturn:5
-root:IRCUserName(WillBeAdmin)
-server:irc.someServer.net
-channel1:#channel1
-channel2:#CHAN2
-channel3:#fsjahe3
+
+// GLOBAL
+server:irc.site.net
+botName:BotName
+channel1:#c1
+channel2:#chann2
+channel3:#wwwewgwrg
+channel4:#wownice
+invokingSymbol:!
+root:YourIRCName
+
+// COMMAND SETTINGS
 googlePrefix:https://www.google.com/#q=
 youtubePrefix:https://www.youtube.com/results?search_query=
-aka-lenny:( ͡° ͜ʖ ͡°)
+
+// AKA RESPONSES
+// ###* will be replaced with what comes after a command
+
 aka-m2k:lol
-aka-cool:hey ###1, you're pretty cool (^:
+aka-lol:m2k
+aka-sayhi:Hello there ###*!!! (^:
+aka-r:http://www.reddit.com/r/###*
