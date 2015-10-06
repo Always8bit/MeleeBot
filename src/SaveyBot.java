@@ -13,26 +13,25 @@ import java.util.*;
 import java.net.*;
 import java.io.*;
 import java.lang.StringBuilder;
+import java.security.MessageDigest;
 
 public class SaveyBot extends PircBot {
     
+    RussianRoulette rr;
+    EightBall eb;
+    
     public SaveyBot() {
         this.setName("SaveyBot");
+        rr = new RussianRoulette();
+        eb = new EightBall();
     }
     
     public void onMessage(String channel, String sender, String login, String hostname, String message) {
 
-        // Help 
-        if (message.toLowerCase().trim().startsWith(".help")) {
-            sendMessage(channel, Colors.RED + Colors.BOLD + "Commands: " + Colors.NORMAL
-                               + ".g [Search Terms], .y [Search Terms], .bracket [Challonge URL or TourneyID], .github");
-        }
-        
-        // GitHub
-        if (message.toLowerCase().trim().startsWith(".github")) {
-            sendMessage(channel, "SaveyBot Source: https://github.com/Always8bit/Saveybot-2.0");
-        }
-        
+        String mCommand = "";
+        String mArgs    = "";
+        String inv = getParam("invokingSymbol");
+    
         // URL Handling
         if (message.contains("http")) {
             System.out.println("URL Parse");
@@ -90,13 +89,40 @@ public class SaveyBot extends PircBot {
                 }
             }
         }
-
+        
+        // split the command from the arguments
+        try {
+            String[] split = message.trim().split("\\s+", 2);
+            mCommand = split[0].toLowerCase();
+            try {
+                mArgs    = split[1];
+            } catch (Exception e) {
+                // no args, only a command
+            }
+        } catch (Exception e) {
+            
+        }
+        
+        if (!mCommand.startsWith(inv))
+            return;
+        
+        mCommand = mCommand.substring(1);
+        
+        System.out.println("Command Detected: [" + mCommand + "]");
+        System.out.println("Arguments Extracted: [" + mArgs + "]");
+        System.out.println("Invoking Symbol: [" + inv + "]");
+        
+        // GitHub
+        if (mCommand.equals("github")) {
+            sendMessage(channel, "SaveyBot Source: https://github.com/Always8bit/Saveybot-2.0");
+        }
+        
         // Challonge Bracket Parsing
-        if (message.toLowerCase().startsWith(".bracket ")) {
+        if (mCommand.equals("bracket")) {
             System.out.println("Challonge Bracket");
             String api  = getParam("challongeApi");
             String user = getParam("challongeUser");
-            String bracket = challongeUrlParse(message.substring(".bracket ".length()));
+            String bracket = challongeUrlParse(mArgs);
             System.out.println("Loading Bracket: " + bracket);
                 try {
                     // get the participants
@@ -129,7 +155,7 @@ public class SaveyBot extends PircBot {
                     ArrayList<ChallongeMatch> upcoming  = battles.get(1);
                     // grab the max number from the config...
                     int numToDisplay = Integer.parseInt(getParam("challongeMaxReturn"));
-                    String completedMessage = "Completed Matches:";
+                    String completedMessage = "";
                     for (int i = completed.size()-1; i >= completed.size()-numToDisplay; i--) {
                         if (i < 0) 
                             break;
@@ -137,7 +163,7 @@ public class SaveyBot extends PircBot {
                             break;
                         completedMessage = completedMessage +  " " + completed.get(i).matchText;
                     }
-                    String upcomingMessage = "Upcoming Matches:";
+                    String upcomingMessage = "";
                     for (int i = upcoming.size()-1; i >= upcoming.size()-numToDisplay; i--) {
                         if (i < 0) 
                             break;
@@ -145,43 +171,65 @@ public class SaveyBot extends PircBot {
                             break;
                         upcomingMessage = upcomingMessage +  " " + upcoming.get(i).matchText;
                     }
-                    sendMessage(channel, completedMessage);
-                    sendMessage(channel, upcomingMessage);
+                    if (!completedMessage.isEmpty())
+                        sendMessage(channel, "Completed Matches:" + completedMessage);
+                    if (!upcomingMessage.isEmpty())
+                        sendMessage(channel, "Upcoming Matches:" + upcomingMessage);
                 } catch (Exception e) {
                     System.out.println("Error parsing bracket!");
                 }
         }
         
         // Google Searching 
-        if (message.toLowerCase().startsWith(".g ")) {
+        if (mCommand.equals("g")) {
             System.out.println("Google Search");
-            String url = message.substring(".g ".length());
-            url = url.trim();
+            String url = mArgs;
             url = getParam("googlePrefix") + url;
             url = url.replaceAll(" ", "%20");
             sendMessage(channel, "Google Search: " + url);
         }
         
         // YouTube Searching 
-        if (message.toLowerCase().startsWith(".y ")) {
+        if (mCommand.equals("y")) {
             System.out.println("YouTube Search");
-            String url = message.substring(".y ".length());
-            url = url.trim();
+            String url = mArgs;
             url = getParam("youtubePrefix") + url;
             url = url.replaceAll("\\+", "%2B");
             url = url.replaceAll(" ", "+");
             sendMessage(channel, "YouTube Search: " + url);
         }
         
-        String simpleResponse = getParam("SIMPLERESPONSE-" + message.toLowerCase().replaceAll("\\.",""));
-        // Simple Response
-        if (!simpleResponse.isEmpty()) {
-            sendMessage(channel, simpleResponse);
+        // Russian Roulette
+        if (mCommand.equals("rr")) {
+            if (rr.fire()) {
+                sendMessage(channel, Colors.RED + "*" + Colors.NORMAL + Colors.BOLD + "BANG" + Colors.NORMAL + Colors.RED + "*");
+                sendMessage(channel, sender + " just blew his brains out. (not like they were important anyways)");
+            } else {
+                sendMessage(channel, Colors.RED + "*" + Colors.NORMAL + Colors.BOLD + "CLICK" + Colors.NORMAL + Colors.RED + "*");
+            }
+        }
+        
+        // 8-Ball
+        if (mCommand.equals("8") || mCommand.equals("8ball") || mCommand.equals("eight")) {
+            if (mArgs.isEmpty())
+                return;
+            sendMessage(channel, sender + ": " + eb.response(mArgs));
+        }
+        
+        // aka commands from param file
+        String aka = getParam("aka-" + mCommand);
+        if (!aka.isEmpty()) {
+            if (aka.contains("###*")) {
+                if (mArgs.isEmpty())
+                    return;
+                aka = aka.replaceAll("\\#\\#\\#\\*", mArgs);
+            }
+            sendMessage(channel, aka);
         }
         
         // admin tools
         if (sender.equals(getParam("root"))) {
-            if (message.equalsIgnoreCase(".disconnect")) {
+            if (mCommand.equalsIgnoreCase("disconnect")) {
                 sendMessage(channel, "rip me");
                 try {
                     TimeUnit.SECONDS.sleep(1);
@@ -192,6 +240,8 @@ public class SaveyBot extends PircBot {
                 System.exit(0);
             }
         }
+        
+        System.out.println("------------------------------");
         
     }
     
@@ -437,6 +487,106 @@ public class SaveyBot extends PircBot {
         public ChallongeMatch(String matchText, int round) {
             this.round = round;
             this.matchText = matchText;
+        }
+    }
+
+    private class RussianRoulette {
+        
+        private int chamber;
+        
+        public RussianRoulette() {
+            loadNewBullet();
+        }
+        
+        private void loadNewBullet() {
+            chamber = ((int)(Math.random()*1024))%6;
+        }
+        
+        public boolean fire() {
+            if (--chamber < 0) {
+                loadNewBullet();
+                return true;
+            }
+            return false;
+        }
+        
+    }
+
+    private class EightBall {
+        
+        private ArrayList<ArrayList<String>> responses;
+
+        final int RESPONSE_NO    = 0;
+        final int RESPONSE_MAYBE = 1;
+        final int RESPONSE_YES   = 2;
+        
+        public EightBall() {
+            ArrayList<String> no    = new ArrayList<>();
+            ArrayList<String> maybe = new ArrayList<>();
+            ArrayList<String> yes   = new ArrayList<>();
+            
+            responses = new ArrayList<>(3);
+            
+            responses.add(RESPONSE_NO, no);
+            responses.add(RESPONSE_MAYBE, maybe);
+            responses.add(RESPONSE_YES, yes);
+
+            // NO Responses
+            no.add("");
+            no.add("I doubt it very much.");
+            no.add("No chance.");
+            no.add("The outlook is poor.");
+            no.add("Unlikely.");
+            no.add("About as likely as pigs flying.");
+            no.add("You're kidding, right?");
+            no.add("NO!");
+            no.add("No.");
+            no.add("NO.");
+            no.add("The answer is a resounding no.");
+            
+            // MAYBE Responses
+            maybe.add("Maybe...");
+            maybe.add("No clue.");
+            maybe.add("I don't know.");
+            maybe.add("In your dreams.");
+            maybe.add("The outlook is hazy, please ask again later.");
+            maybe.add("What are you asking me for?");
+            maybe.add("Come again?");
+            maybe.add("You know the answer better than I.");
+            maybe.add("The answer is def-- oooh! shiny thing!");
+            
+            // YES Responses
+            yes.add("Yes!");
+            yes.add("Of course.");
+            yes.add("Naturally.");
+            yes.add("Obviously.");
+            yes.add("It shall be.");
+            yes.add("The outlook is good.");
+            yes.add("One would be wise to think so.");
+            yes.add("The answer is certainly yes.");
+           
+        }
+        
+        public String response(String question) {
+            try {
+                MessageDigest md = MessageDigest.getInstance("MD5");
+                md.update(question.getBytes());
+                byte[] hash = md.digest();
+                int n = hash[hash.length-1];
+                n = Math.abs(n);
+                n = n%3;
+                return getMessage(n);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return "Eightball is having trouble answering your question... try wording it differently.";
+        }
+        
+        private String getMessage(int n) {
+            // 0 = NO, 1 = MAYBE, 2 = YES
+            int range = responses.get(n).size();
+            int randMessageIndex = ((int)(Math.random()*10000))%range;
+            return responses.get(n).get(randMessageIndex);
         }
     }
 }

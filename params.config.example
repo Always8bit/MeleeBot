@@ -1,3 +1,7 @@
+// ###* will be replaced with what comes after a command
+// ###1 will take the 1st word after a command
+// ###2 will take the second, etc
+invokingSymbol:!
 challongeApi:xxxxxxxxxxxxxxxxxxxxx
 challongeUser:xxxxxxx
 challongeMaxReturn:5
@@ -8,5 +12,6 @@ channel2:#CHAN2
 channel3:#fsjahe3
 googlePrefix:https://www.google.com/#q=
 youtubePrefix:https://www.youtube.com/results?search_query=
-SIMPLERESPONSE-lenny:( ͡° ͜ʖ ͡°)
-SIMPLERESPONSE-m2k:lol
+aka-lenny:( ͡° ͜ʖ ͡°)
+aka-m2k:lol
+aka-cool:hey ###1, you're pretty cool (^:
