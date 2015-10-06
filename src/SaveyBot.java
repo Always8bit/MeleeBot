@@ -113,11 +113,7 @@ public class SaveyBot extends PircBot {
             return;
         
         mCommand = mCommand.substring(1);
-        
-        System.out.println("Command Detected: [" + mCommand + "]");
-        System.out.println("Arguments Extracted: [" + mArgs + "]");
-        System.out.println("Invoking Symbol: [" + inv + "]");
-        
+
         // FLOOD PROTECTED COMMANDS 
         FloodTimer ft = null;
         for (int i=0; i<ftArray.size(); i++) {
@@ -182,11 +178,14 @@ public class SaveyBot extends PircBot {
                                 break;
                             upcomingMessage = upcomingMessage +  " " + upcoming.get(i).matchText;
                         }
-                        if (!completedMessage.isEmpty())
-                            sendMessage(channel, "Completed Matches:" + completedMessage);
-                        if (!upcomingMessage.isEmpty())
+                        if (!upcomingMessage.isEmpty()) {
+                            if (!completedMessage.isEmpty())
+                                sendMessage(channel, "Completed Matches:" + completedMessage);
                             sendMessage(channel, "Upcoming Matches:" + upcomingMessage);
-                        ft.executedSuccessfully();
+                            ft.executedSuccessfully();
+                        } else {
+                            sendMessage(channel, Colors.BOLD + bracket + "'s Results" + Colors.NORMAL + ": " + challongeStandingsParse(bracket));
+                        }
                     } catch (Exception e) {
                         System.out.println("Error parsing bracket!");
                     }
@@ -231,7 +230,10 @@ public class SaveyBot extends PircBot {
                 mArgs = "is " + mArgs;
             sendMessage(channel, sender + ": " + eb.response(mArgs));
         }
-        
+
+        if (mCommand.equals("why"))
+            sendMessage(channel, sender + ": " + eb.getMessage(1));
+
         // aka commands from param file
         String aka = getParam("aka-" + mCommand);
         if (!aka.isEmpty()) {
@@ -256,9 +258,46 @@ public class SaveyBot extends PircBot {
                 System.exit(0);
             }
         }
+
         
-        System.out.println("------------------------------");
+    }
+    
+    private String challongeStandingsParse(String bracket) throws Exception {
+        String url = "http://challonge.com/" + bracket + "/standings";
         
+        String rankPrefix  = "<span>";
+        String rankPostfix = "</span>";
+        String rankSectionStart = "<td class='left display_name'>";
+        
+        URL site = new URL(url);
+        BufferedReader in = new BufferedReader(new InputStreamReader(site.openStream()));
+        String inputLine;
+        StringBuilder html = new StringBuilder();
+        while ((inputLine = in.readLine()) != null) {
+            html.append(inputLine + "\n");
+        }
+        in.close();
+        String htmlText = html.toString();
+        
+        String[] names = new String[3];
+        
+        int previousIndex = 0;
+        for(int i=0; i<3; i++) {
+            String name = "none...";
+            try {
+                int index = htmlText.indexOf(rankSectionStart, previousIndex);
+                name = parseTagInMatch(index, rankPrefix, rankPostfix, htmlText);
+                previousIndex = index + 1;
+            } catch (Exception e) {
+                
+            }
+            names[i] = name;
+        }
+       
+        String returnNames = "[" + Colors.BOLD + Colors.GREEN + "1st: " + Colors.NORMAL + names[0] + "]" + " | " + Colors.NORMAL
+                           + "[" + Colors.BOLD + Colors.BLUE  + "2nd: " + Colors.NORMAL + names[1] + "]" + " | " + Colors.NORMAL
+                           + "[" + Colors.BOLD + Colors.RED   + "3rd: " + Colors.NORMAL + names[2] + "]";
+        return returnNames;
     }
     
     private String betweenTags(String tagOpen, String tagClose, String html) throws Exception{
@@ -598,7 +637,7 @@ public class SaveyBot extends PircBot {
             return "Eightball is having trouble answering your question... try wording it differently.";
         }
         
-        private String getMessage(int n) {
+        public String getMessage(int n) {
             // 0 = NO, 1 = MAYBE, 2 = YES
             int range = responses.get(n).size();
             int randMessageIndex = ((int)(Math.random()*10000))%range;
