@@ -11,7 +11,8 @@ channel1:#c1
 channel2:#chann2
 channel3:#wwwewgwrg
 channel4:#wownice
-invokingSymbol:!
+invokingSymbol1:!
+invokingSymbol1:~
 root:YourIRCName
 useragent:Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36
 
