@@ -36,7 +36,7 @@ public class SaveyBot extends PircBot {
 
         String mCommand = "";
         String mArgs    = "";
-        String inv1 = getParam("invokingSymbol1");
+        String inv = getParam("invokingSymbol1");
         String inv2 = getParam("invokingSymbol2");
         String inv3 = getParam("invokingSymbol3");
         
@@ -102,7 +102,7 @@ public class SaveyBot extends PircBot {
             
         }
         
-        if (!(mCommand.startsWith(inv1) || mCommand.startsWith(inv2) || mCommand.startsWith(inv3)))
+        if (!(mCommand.startsWith(inv) || mCommand.startsWith(inv2) || mCommand.startsWith(inv3)))
             return;
         
         mCommand = mCommand.substring(1);
