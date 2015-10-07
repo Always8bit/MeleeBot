@@ -38,8 +38,9 @@ public class SaveyBot extends PircBot {
         String mArgs    = "";
         ArrayList<String> inv = new ArrayList<>();
         
-        for (int i = 1;!getParam("invokingSymbol"+i).isEmpty();i++)
+        for (int i = 1;!getParam("invokingSymbol"+i).isEmpty();i++) {
             inv.add(getParam("invokingSymbol"+i));
+        }
 
         boolean invoked = false;
         for (int i = 0; i<inv.size(); i++) {
