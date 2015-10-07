@@ -186,6 +186,11 @@ public class SaveyBot extends PircBot {
             }
         }
         
+        // Brawl Kick
+        if (mCommand.equals("brawl")) {
+            kick(channel, sender, "What the fuck dude?");
+        }
+        
         // Twitch Stream Search
         if (mCommand.equals("twitch")) {
             String[] results = twitchAPISearch(mArgs);
@@ -243,8 +248,10 @@ public class SaveyBot extends PircBot {
         String aka = getParam("aka-" + mCommand);
         if (!aka.isEmpty()) {
             if (aka.contains("###*")) {
-                if (mArgs.isEmpty())
+                if (mArgs.isEmpty()) {
+                    sendMessage(sender, inv + mCommand + " needs more arguments you dumpass");
                     return;
+                }
                 aka = aka.replaceAll("\\#\\#\\#\\*", mArgs);
             }
             sendMessage(channel, aka);
