@@ -228,6 +228,7 @@ public class SaveyBot extends PircBot {
         if (mCommand.equals("rr")) {
             if (rr.fire()) {
                 sendMessage(channel, Colors.RED + "*" + Colors.NORMAL + Colors.BOLD + "BANG" + Colors.NORMAL + Colors.RED + "*");
+                kick(channel, sender, "rip");
                 sendMessage(channel, sender + " just blew his brains out. (not like they were important anyways)");
                 sendMessage(channel, "A new bullet was loaded into the chamber.");
             } else {
