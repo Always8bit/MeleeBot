@@ -36,17 +36,10 @@ public class SaveyBot extends PircBot {
 
         String mCommand = "";
         String mArgs    = "";
-        ArrayList<String> inv = new ArrayList<>();
+        String inv1 = getParam("invokingSymbol1");
+        String inv2 = getParam("invokingSymbol2");
+        String inv3 = getParam("invokingSymbol3");
         
-        for (int i = 1;!getParam("invokingSymbol"+i).isEmpty();i++) {
-            inv.add(getParam("invokingSymbol"+i));
-        }
-
-        boolean invoked = false;
-        for (int i = 0; i<inv.size(); i++) {
-            if (mCommand.startsWith(inv.get(i)))
-                invoked = true;
-        }
     
         // URL Handling
         if (message.contains("http")) {
@@ -109,7 +102,7 @@ public class SaveyBot extends PircBot {
             
         }
         
-        if (!invoked)
+        if (!(mCommand.startsWith(inv1) || mCommand.startsWith(inv2) || mCommand.startsWith(inv3)))
             return;
         
         mCommand = mCommand.substring(1);
