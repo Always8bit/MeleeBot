@@ -189,6 +189,31 @@ public class SaveyBot extends PircBot {
             }
         }
         
+        // Wolfram Alpha API
+        if (mCommand.equals("calc")) {
+            try {
+                String api = getParam("wolframApiKey");
+                String formattedInput = mArgs.trim().replaceAll(" ", "%20").replaceAll("\\'", "%27").replaceAll("\\?", "%63").replaceAll("\\%", "%37");
+                String url = "http://api.wolframalpha.com/v2/query?input=" + formattedInput + "&appid=" + api;
+                URL site = new URL(url);
+                BufferedReader in = new BufferedReader(new InputStreamReader(site.openStream()));
+                String inputLine;
+                StringBuilder xml = new StringBuilder();
+                while ((inputLine = in.readLine()) != null) {
+                    xml.append(inputLine + "\n");
+                }
+                in.close();
+                String xmlString = xml.toString();
+                int resultsIndex = xmlString.indexOf("title=\"Result\"");
+                String rPre  = "<plaintext>";
+                String rPost = "</plaintext>";
+                String result = parseTagInMatch(resultsIndex, rPre, rPost, xmlString);
+                sendMessage(channel, result);
+            } catch (Exception e) {
+                sendMessage(channel, "Try rephrasing your question, I didn't quite understand it...");
+            }
+        }
+        
         // Brawl Kick
         if (mCommand.equals("brawl")) {
             kick(channel, sender, "What the fuck dude?");
