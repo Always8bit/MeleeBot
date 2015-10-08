@@ -194,7 +194,7 @@ public class SaveyBot extends PircBot {
             try {
                 String api = getParam("wolframApiKey");
                 String formattedInput = mArgs.trim().replaceAll("\\%", "%25").replaceAll("\\+", "%2B").replaceAll("\\ ", "+").replaceAll("\\,", "%2C").replaceAll("\\\"", "%22").replaceAll("\\'", "%91");
-                String url = "http://api.wolframalpha.com/v2/query?input=" + formattedInput + "&appid=" + api;
+                String url = "http://api.wolframalpha.com/v2/query?input=" + formattedInput + "&units=nonmetric&appid=" + api;
                 URL site = new URL(url);
                 BufferedReader in = new BufferedReader(new InputStreamReader(site.openStream(), "UTF-8"));
                 String inputLine;
@@ -204,7 +204,7 @@ public class SaveyBot extends PircBot {
                 }
                 in.close();
                 String xmlString = xml.toString().replace('\n', ' ').replace('\r', ' ');
-                int resultsIndex = xmlString.indexOf("<plaintext>") + 1;
+                int resultsIndex = xmlString.indexOf("</pod>");
                 if (resultsIndex == -1) {
                     System.out.println(xmlString);
                     System.out.println(url);
