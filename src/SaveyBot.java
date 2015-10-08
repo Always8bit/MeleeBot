@@ -196,7 +196,7 @@ public class SaveyBot extends PircBot {
                 String formattedInput = mArgs.trim().replaceAll("\\ ", "%20").replaceAll("\\'", "%27").replaceAll("\\?", "%63").replaceAll("\\%", "%37");
                 String url = "http://api.wolframalpha.com/v2/query?input=" + formattedInput + "&appid=" + api;
                 URL site = new URL(url);
-                BufferedReader in = new BufferedReader(new InputStreamReader(site.openStream()));
+                BufferedReader in = new BufferedReader(new InputStreamReader(site.openStream(), "UTF-8"));
                 String inputLine;
                 StringBuilder xml = new StringBuilder();
                 while ((inputLine = in.readLine()) != null) {
@@ -205,8 +205,11 @@ public class SaveyBot extends PircBot {
                 in.close();
                 String xmlString = xml.toString();
                 int resultsIndex = xmlString.indexOf("title=\"Result\"");
-                if (resultsIndex == -1)
+                if (resultsIndex == -1) {
+                    System.out.println(xmlString);
+                    System.out.println(url);
                     throw new Exception();
+                }
                 String rPre  = "<plaintext>";
                 String rPost = "</plaintext>";
                 String result = betweenTags(rPre, rPost, xmlString, resultsIndex);
