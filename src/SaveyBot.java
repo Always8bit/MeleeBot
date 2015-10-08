@@ -193,7 +193,7 @@ public class SaveyBot extends PircBot {
         if (mCommand.equals("calc")) {
             try {
                 String api = getParam("wolframApiKey");
-                String formattedInput = mArgs.trim().replaceAll("\\ ", "%20").replaceAll("\\'", "%27").replaceAll("\\?", "%63").replaceAll("\\%", "%37");
+                String formattedInput = mArgs.trim();
                 String url = "http://api.wolframalpha.com/v2/query?input=" + formattedInput + "&appid=" + api;
                 URL site = new URL(url);
                 BufferedReader in = new BufferedReader(new InputStreamReader(site.openStream(), "UTF-8"));
