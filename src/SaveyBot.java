@@ -210,7 +210,7 @@ public class SaveyBot extends PircBot {
                 }
                 String rPre  = "<plaintext>";
                 String rPost = "</plaintext>";
-                String result = betweenTags(rPre, rPost, xmlString, resultsIndex);
+                String result = parseTagInMatch(resultsIndex, rPre, rPost, xmlString);
                 sendMessage(channel, result);
             } catch (Exception e) {
                 sendMessage(channel, "Try rephrasing your question, I didn't quite understand it...");
