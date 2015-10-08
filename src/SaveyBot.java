@@ -204,10 +204,8 @@ public class SaveyBot extends PircBot {
                 }
                 in.close();
                 String xmlString = xml.toString();
-                int resultsIndex = xmlString.indexOf("title=\"Result\"");
+                int resultsIndex = xmlString.indexOf("title='Result'");
                 if (resultsIndex == -1) {
-                    System.out.println(xmlString);
-                    System.out.println(url);
                     throw new Exception();
                 }
                 String rPre  = "<plaintext>";
