@@ -193,7 +193,7 @@ public class SaveyBot extends PircBot {
         if (mCommand.equals("calc")) {
             try {
                 String api = getParam("wolframApiKey");
-                String formattedInput = mArgs.trim().replaceAll(" ", "%20").replaceAll("\\'", "%27").replaceAll("\\?", "%63").replaceAll("\\%", "%37");
+                String formattedInput = mArgs.trim().replaceAll("\\ ", "%20").replaceAll("\\'", "%27").replaceAll("\\?", "%63").replaceAll("\\%", "%37");
                 String url = "http://api.wolframalpha.com/v2/query?input=" + formattedInput + "&appid=" + api;
                 URL site = new URL(url);
                 BufferedReader in = new BufferedReader(new InputStreamReader(site.openStream()));
@@ -205,9 +205,11 @@ public class SaveyBot extends PircBot {
                 in.close();
                 String xmlString = xml.toString();
                 int resultsIndex = xmlString.indexOf("title=\"Result\"");
+                if (resultsIndex == -1)
+                    throw new Exception();
                 String rPre  = "<plaintext>";
                 String rPost = "</plaintext>";
-                String result = parseTagInMatch(resultsIndex, rPre, rPost, xmlString);
+                String result = betweenTags(rPre, rPost, xmlString, resultsIndex);
                 sendMessage(channel, result);
             } catch (Exception e) {
                 sendMessage(channel, "Try rephrasing your question, I didn't quite understand it...");
@@ -410,6 +412,18 @@ public class SaveyBot extends PircBot {
         tagClose = tagClose.toLowerCase();
         String htmlSearch = html.toLowerCase();
         int begin = htmlSearch.indexOf(tagOpen) + tagOpen.length();
+        int end = htmlSearch.indexOf(tagClose, begin);
+        if (((begin-tagOpen.length()) == -1) || (end == -1))
+            throw new Exception();
+        String text = html.substring(begin, end).replaceAll("\n", " ").replaceAll("\r", " ");
+        return text;
+    }
+    
+    private String betweenTags(String tagOpen, String tagClose, String html, int startIndex) throws Exception{
+        tagOpen = tagOpen.toLowerCase();
+        tagClose = tagClose.toLowerCase();
+        String htmlSearch = html.toLowerCase();
+        int begin = htmlSearch.indexOf(tagOpen, startIndex) + tagOpen.length();
         int end = htmlSearch.indexOf(tagClose, begin);
         if (((begin-tagOpen.length()) == -1) || (end == -1))
             throw new Exception();
