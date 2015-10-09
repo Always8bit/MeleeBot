@@ -192,6 +192,10 @@ public class SaveyBot extends PircBot {
         // Wolfram Alpha API
         if (mCommand.equals("calc")) {
             try {
+                if (mArgs.trim().toLowerCase().equals("size of radbot's penis")) {
+                    sendMessage(channel, "30.2 cm (centimeters) (Length based on available data from the US)");
+                    return;
+                }
                 String api = getParam("wolframApiKey");
                 String formattedInput = mArgs.trim().replaceAll("\\%", "%25")
                                                     .replaceAll("\\+", "%2B")
