@@ -105,7 +105,7 @@ public class SaveyBot extends PircBot {
         if (!(mCommand.startsWith(inv) || mCommand.startsWith(inv2) || mCommand.startsWith(inv3)))
             return;
         
-        mCommand = mCommand.substring(1);
+        mCommand = mCommand.substring(1).toLowerCase();
 
         // FLOOD PROTECTED COMMANDS 
         FloodTimer ft = null;
@@ -230,6 +230,20 @@ public class SaveyBot extends PircBot {
             } catch (Exception e) {
                 sendMessage(channel, "Try rephrasing your question, I didn't quite understand it...");
             }
+        }
+        
+        // Boys
+        if (mCommand.equals("boys")) {
+            String boyzMe = mArgs.trim().toUpperCase().replaceAll("\\ ", "");
+            if (boyzMe.isEmpty())
+                return;
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < boyzMe.length(); i++) {
+                sb.append(boyzMe.charAt(i));
+                sb.append(' ');
+            }
+            sb.append("B O Y S");
+            sendMessage(channel, sb.toString());
         }
         
         // Brawl Kick
