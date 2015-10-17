@@ -491,9 +491,12 @@ public class SaveyBot extends PircBot {
         if (!exists) {
             sb.append(p + ":" + val).append("\n");
         }
-        PrintWriter out = new PrintWriter("params.config");
-        out.println(sb.toString());
-        out.close();
+        Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("params.config"), "UTF-8"));
+        try {
+            out.write(sb.toString());
+        } finally {
+            out.close();
+        }
     }
     
     public void delParam(String p) throws Exception {
@@ -504,9 +507,12 @@ public class SaveyBot extends PircBot {
             if (!inputLine.startsWith(p + ":"))
                 sb.append(inputLine).append("\n");
         }
-        PrintWriter out = new PrintWriter("params.config");
-        out.println(sb.toString());
-        out.close();
+        Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("params.config"), "UTF-8"));
+        try {
+            out.write(sb.toString());
+        } finally {
+            out.close();
+        }
     }
     
     private String challongeUrlParse(String s) {
