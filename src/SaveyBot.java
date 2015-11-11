@@ -76,7 +76,6 @@ public class SaveyBot extends PircBot {
                         String websiteTitle = betweenTags("<title>", "</title>", html);
                         websiteTitle = websiteTitle.trim();
                         sendMessage(channel, websiteTitle);
-                        }
                     } catch (Exception e) {
                         // No <title> was found...                        
                     }
