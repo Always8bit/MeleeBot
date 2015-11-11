@@ -42,8 +42,8 @@ public class SaveyBot extends PircBot {
         
     
         // URL Handling
-        if (message.contains("http")) {
-            System.out.println("URL Parse");
+        if (message.toLowerCase().contains("youtube.com")) {
+            System.out.println("YouTube Parse");
             //  ((http|https):\/\/\S+\.\S+) 
             // ^ URL Regex for this box
             String regex = "((http|https):\\/\\/\\S+\\.\\S+)";
@@ -72,15 +72,13 @@ public class SaveyBot extends PircBot {
                     in.close();
                     String html = websiteContents.toString();
                     try {
-                        if (message.toLowerCase().contains("youtube.com")) {
-                            // If no <title> is found, it will throw an exception!
-                            String websiteTitle = betweenTags("<title>", "</title>", html);
-                            websiteTitle = websiteTitle.trim();
-                            sendMessage(channel, Colors.BOLD + "Title: " + Colors.NORMAL + websiteTitle);
+                        // If no <title> is found, it will throw an exception!
+                        String websiteTitle = betweenTags("<title>", "</title>", html);
+                        websiteTitle = websiteTitle.trim();
+                        sendMessage(channel, websiteTitle);
                         }
                     } catch (Exception e) {
-                        // No <title> was found...
-                        
+                        // No <title> was found...                        
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
