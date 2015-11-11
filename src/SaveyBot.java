@@ -248,6 +248,11 @@ public class SaveyBot extends PircBot {
             kick(channel, sender, "What the fuck dude?");
         }
         
+        // Raffle kick
+        if (mCommand.equals("raffle")) {
+            kick(channel, sender, "Congradulations! You win!");
+        }
+        
         // Twitch Stream Search
         if (mCommand.equals("twitch")) {
             String[] results = twitchAPISearch(mArgs);
