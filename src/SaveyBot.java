@@ -284,7 +284,7 @@ public class SaveyBot extends PircBot {
         }
         
         // Russian Roulette
-        if (mCommand.equals("rr") && channel.equals(getParam("rrChannel"))) {
+        if (mCommand.equals("rr") && channel.toLowerCase().equals(getParam("rrChannel").toLowerCase())) {
             if (rr.fire()) {
                 sendMessage(channel, Colors.RED + "*" + Colors.NORMAL + Colors.BOLD + "BANG" + Colors.NORMAL + Colors.RED + "*");
                 kick(channel, sender, "rip");
